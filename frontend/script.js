@@ -41,6 +41,17 @@ const CHART_DATA = {
   monthly: { labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul"], values: [54000,61000,48000,72000,84500,67000,78000] },
 };
 
+const MEDICINE_DATA = [
+  { patient: "Meera Nair",      medicine: "Arnica Montana 200", dosage: "5 drops", frequency: "3 times a day", status: "Running", start: "May 01, 2026" },
+  { patient: "Arjun Pillai",    medicine: "Nux Vomica 30",     dosage: "4 pills", frequency: "twice daily",  status: "Running", start: "May 05, 2026" },
+  { patient: "Divya Menon",     medicine: "Rhus Tox 200C",     dosage: "5 drops", frequency: "once a day",    status: "Completed", start: "Apr 20, 2026" },
+  { patient: "Rahul Thomas",    medicine: "Belladonna 1M",     dosage: "2 pills", frequency: "every 4 hours", status: "Running", start: "May 10, 2026" },
+  { patient: "Sreelakshmi V.",  medicine: "Pulsatilla 30",     dosage: "5 drops", frequency: "bedtime",       status: "Running", start: "May 08, 2026" },
+  { patient: "Anil Kumar",      medicine: "Lycopodium 200",    dosage: "4 pills", frequency: "morning",       status: "Completed", start: "Apr 15, 2026" },
+  { patient: "Sneha Nair",      medicine: "Ignatia 30",        dosage: "5 drops", frequency: "thrice daily",  status: "Running", start: "May 02, 2026" },
+];
+
+
 // ── UTILITIES ─────────────────────────────────────────────────
 function getInitials(name) {
   return name.split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase();
@@ -48,6 +59,10 @@ function getInitials(name) {
 
 function showToast(msg, type = "success") {
   const t = document.getElementById("toast");
+  if (!t) {
+    console.log(`Toast (${type}): ${msg}`);
+    return;
+  }
   t.textContent = "";
   const icon = document.createElement("i");
   icon.className = type === "success" ? "fa-solid fa-circle-check" : "fa-solid fa-circle-xmark";
@@ -247,6 +262,25 @@ function renderFollowups() {
     </li>`).join("");
 }
 
+// ── MEDICINES TABLE ───────────────────────────────────────────
+function renderMedicines() {
+  const tbody = document.getElementById("medicinesBody");
+  if (!tbody) return;
+  tbody.innerHTML = MEDICINE_DATA.map(m => `
+    <tr>
+      <td><strong>${m.patient}</strong></td>
+      <td><span class="badge" style="background:rgba(96, 165, 250, 0.1);color:var(--accent);border:1px solid rgba(96, 165, 250, 0.2)">${m.medicine}</span></td>
+      <td>${m.dosage}</td>
+      <td>${m.frequency}</td>
+      <td><span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--muted)">${m.start}</span></td>
+      <td><span class="badge badge-${m.status === 'Running' ? 'confirmed' : 'completed'}">${m.status}</span></td>
+      <td>
+        <button class="tbl-action" title="Edit Prescription"><i class="fa-solid fa-prescription"></i></button>
+        <button class="tbl-action" title="Update Status"><i class="fa-solid fa-arrows-rotate"></i></button>
+      </td>
+    </tr>`).join("");
+}
+
 // ── CHART ─────────────────────────────────────────────────────
 let currentPeriod = "weekly";
 
@@ -352,14 +386,32 @@ function initModal() {
 
   form.addEventListener("submit", e => {
     e.preventDefault();
-    const name = document.getElementById("patientName").value.trim();
-    const time = document.getElementById("aptTime").value;
-    const doctor = document.getElementById("aptDoctor").value;
-    const type = document.getElementById("aptType").value;
-    if (!name || !time || !doctor || !type) { showToast("Please fill all fields.", "error"); return; }
+    const nameInput = document.getElementById("patientName");
+    const timeInput = document.getElementById("aptTime");
+    const doctorInput = document.getElementById("aptDoctor");
+    const typeInput = document.getElementById("aptType");
 
+    if (!nameInput || !timeInput || !doctorInput || !typeInput) return;
+
+    const name = nameInput.value.trim();
+    const time = timeInput.value;
+    const doctor = doctorInput.value;
+    const type = typeInput.value;
+
+    if (!name || !time || !doctor || !type) {
+      showToast("Please fill all fields.", "error");
+      return;
+    }
+
+    // Add to data
     APPOINTMENTS.unshift({ id: Date.now(), name, time, doctor, type, status: "pending" });
-    renderAppointments(document.getElementById("aptFilter").value);
+    
+    // Update UI
+    const filterEl = document.getElementById("aptFilter");
+    renderAppointments(filterEl ? filterEl.value : "all");
+    renderAptStatusChart();
+    initCounters();
+    
     overlay.hidden = true;
     form.reset();
     showToast(`Appointment for ${name} booked!`);
@@ -412,7 +464,8 @@ function initSearch() {
   if (!input) return;
   input.addEventListener("input", () => {
     const q = input.value.toLowerCase();
-    if (!q) { renderAppointments(document.getElementById("aptFilter").value); return; }
+    const filterEl = document.getElementById("aptFilter");
+    if (!q) { renderAppointments(filterEl ? filterEl.value : "all"); return; }
     const filtered = APPOINTMENTS.filter(a =>
       a.name.toLowerCase().includes(q) || a.doctor.toLowerCase().includes(q) || a.type.toLowerCase().includes(q)
     );
@@ -488,6 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderPastAppointments();
   renderPatients();
   renderAllPatients();
+  renderMedicines();
   renderFollowups();
   renderChart(currentPeriod);
   renderDonutChart();

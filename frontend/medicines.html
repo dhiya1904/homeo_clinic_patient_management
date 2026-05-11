@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Register a new patient - HomeoCareCRM" />
-  <title>HomeoCareCRM | New Patient</title>
+  <meta name="description" content="Medicine management and prescription history - HomeoCareCRM" />
+  <title>HomeoCareCRM | Medicines</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -33,7 +33,7 @@
             <span class="nav-label">Dashboard</span>
           </a>
         </li>
-        <li class="nav-item active" role="none">
+        <li class="nav-item" role="none">
           <a href="patients.html" class="nav-link" role="menuitem" data-section="patients">
             <i class="fa-solid fa-user-group nav-icon"></i>
             <span class="nav-label">Patients</span>
@@ -47,7 +47,7 @@
             <span class="nav-badge">12</span>
           </a>
         </li>
-        <li class="nav-item" role="none">
+        <li class="nav-item active" role="none">
           <a href="medicines.html" class="nav-link" role="menuitem" data-section="medicines">
             <i class="fa-solid fa-flask nav-icon"></i>
             <span class="nav-label">Medicines</span>
@@ -95,12 +95,25 @@
           <i class="fa-solid fa-bars"></i>
         </button>
         <div class="page-title">
-          <h1 id="pageTitle">New Patient Registration</h1>
-          <p class="breadcrumb"><a href="index.html" style="color:var(--muted);text-decoration:none;">Dashboard</a> / <strong style="color:var(--text);">New Patient</strong></p>
+          <h1 id="pageTitle">Medicines & Prescriptions</h1>
+          <p class="breadcrumb"><a href="index.html" style="color:var(--muted);text-decoration:none;">Dashboard</a> / <strong style="color:var(--text);">Medicine History</strong></p>
         </div>
       </div>
 
       <div class="topbar-right">
+        <div class="topbar-actions">
+          <a href="new-patient.html" class="btn-topbar" id="qa-new-patient" aria-label="Register New Patient" style="text-decoration: none;">
+            <i class="fa-solid fa-user-plus"></i> New Patient
+          </a>
+          <button class="btn-topbar btn-topbar--teal" id="qa-book-apt" aria-label="Book Appointment">
+            <i class="fa-solid fa-calendar-plus"></i> Book Appointment
+          </button>
+        </div>
+        <div class="search-bar">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="search" id="globalSearch" placeholder="Search patients or medicines…" aria-label="Global search" />
+        </div>
+
         <button class="icon-btn" id="notifBtn" aria-label="Notifications" title="Notifications">
           <i class="fa-solid fa-bell"></i>
           <span class="notif-dot"></span>
@@ -126,88 +139,89 @@
 
     <!-- ===== PAGE CONTENT ===== -->
     <main class="content" id="mainContent" role="main">
-      <div class="card form-card">
-        <div class="card-header border-bottom">
-          <h2 class="card-title"><i class="fa-solid fa-id-card-clip"></i> Patient Information</h2>
-          <p class="card-subtitle">Fill in the details below to register a new patient in the system.</p>
+
+      <!-- ===== MEDICINES TABLE ===== -->
+      <section class="mid-row">
+        <div class="card table-card" id="medicines-section">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fa-solid fa-pills"></i> Patient Prescriptions</h2>
+            <div class="card-actions">
+              <button class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> New Prescription
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrapper" role="region" aria-label="Medicines Table" tabindex="0">
+            <table class="data-table" id="medicinesTable">
+              <thead>
+                <tr>
+                  <th scope="col">Patient Name</th>
+                  <th scope="col">Medicine</th>
+                  <th scope="col">Dosage</th>
+                  <th scope="col">Frequency</th>
+                  <th scope="col">Started Date</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="medicinesBody">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
         </div>
-        
-        <form class="patient-form" id="newPatientForm">
-          <div class="form-section">
-            <h3 class="section-title">Personal Details</h3>
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="pName">Full Name <span class="required">*</span></label>
-                <input type="text" id="pName" placeholder="e.g. John Doe" required />
-              </div>
-              <div class="form-group">
-                <label for="pAge">Age <span class="required">*</span></label>
-                <input type="number" id="pAge" placeholder="e.g. 34" min="0" max="120" required />
-              </div>
-              <div class="form-group">
-                <label for="pGender">Gender <span class="required">*</span></label>
-                <select id="pGender" required>
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="pContact">Contact Number</label>
-                <input type="tel" id="pContact" placeholder="+91 XXXXX XXXXX" />
-              </div>
-              <div class="form-group full-width">
-                <label for="pAddress">Address</label>
-                <textarea id="pAddress" placeholder="Full residential address..." rows="3"></textarea>
-              </div>
-            </div>
-          </div>
+      </section>
 
-          <div class="form-section">
-            <h3 class="section-title">Medical History & Treatment</h3>
-            <div class="form-grid">
-              <div class="form-group full-width">
-                <label for="pLifestyle">Lifestyle Diseases</label>
-                <select id="pLifestyle" onchange="document.getElementById('pLifestyleOther').style.display = this.value === 'others' ? 'block' : 'none'">
-                  <option value="">None / Select if applicable</option>
-                  <option value="diabetes">Diabetes</option>
-                  <option value="hypertension">Hypertension</option>
-                  <option value="obesity">Obesity</option>
-                  <option value="thyroid">Thyroid Disorders</option>
-                  <option value="asthma">Asthma</option>
-                  <option value="others">Others (Please specify)</option>
-                </select>
-                <input type="text" id="pLifestyleOther" placeholder="Please specify other lifestyle diseases..." style="display:none; margin-top: 10px;" />
-              </div>
-              <div class="form-group full-width">
-                <label for="pCause">Cause of Disease / Chief Complaint <span class="required">*</span></label>
-                <textarea id="pCause" placeholder="Describe the main symptoms or cause..." rows="3" required></textarea>
-              </div>
-              <div class="form-group full-width">
-                <label for="pTreatment">Current Treatment / Medication</label>
-                <textarea id="pTreatment" placeholder="Details of what the patient is getting treated for..." rows="3"></textarea>
-              </div>
-              <div class="form-group">
-                <label for="pDoctor">Consulting Doctor <span class="required">*</span></label>
-                <select id="pDoctor" required>
-                  <option value="">Select Doctor</option>
-                  <option value="Dr. Priya S.">Dr. Priya S.</option>
-                  <option value="Dr. Arjun K.">Dr. Arjun K.</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-actions form-footer">
-            <button type="button" class="btn btn-ghost" onclick="window.location.href='index.html'">Cancel</button>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Register Patient</button>
-          </div>
-        </form>
-      </div>
     </main>
   </div>
 
+  <!-- ===== MODAL: Add Appointment ===== -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle"><i class="fa-solid fa-calendar-plus"></i> New Appointment</h2>
+        <button class="modal-close" id="modalClose" aria-label="Close modal">&times;</button>
+      </div>
+      <form class="modal-form" id="appointmentForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="patientName">Patient Name</label>
+            <input type="text" id="patientName" placeholder="Full name" required />
+          </div>
+          <div class="form-group">
+            <label for="aptTime">Appointment Time</label>
+            <input type="time" id="aptTime" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aptDoctor">Doctor</label>
+            <select id="aptDoctor" required>
+              <option value="">Select Doctor</option>
+              <option value="Dr. Priya S.">Dr. Priya S.</option>
+              <option value="Dr. Arjun K.">Dr. Arjun K.</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="aptType">Visit Type</label>
+            <select id="aptType" required>
+              <option value="">Select Type</option>
+              <option value="New Consultation">New Consultation</option>
+              <option value="Follow-up">Follow-up</option>
+              <option value="Emergency">Emergency</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" id="cancelModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Appointment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== TOAST NOTIFICATION ===== -->
   <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
   <script src="script.js"></script>
