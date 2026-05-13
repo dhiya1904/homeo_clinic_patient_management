@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Clinic Performance Reports - HomeoCareCRM" />
+  <title>HomeoCareCRM | Reports</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body id="reports-page-container">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon"><i class="fa-solid fa-leaf"></i></span>
+        <span class="logo-text clinic-name">HomeoCareCRM</span>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul class="nav-list" role="menubar">
+        <li class="nav-item" role="none">
+          <a href="index.html" class="nav-link" role="menuitem" data-section="dashboard">
+            <i class="fa-solid fa-gauge-high nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="patients.html" class="nav-link" role="menuitem" data-section="patients">
+            <i class="fa-solid fa-user-group nav-icon"></i>
+            <span class="nav-label">Patients</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="appointments.html" class="nav-link" role="menuitem" data-section="appointments">
+            <i class="fa-solid fa-calendar-check nav-icon"></i>
+            <span class="nav-label">Appointments</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="medicines.html" class="nav-link" role="menuitem" data-section="medicines">
+            <i class="fa-solid fa-flask nav-icon"></i>
+            <span class="nav-label">Medicines</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="billing.html" class="nav-link" role="menuitem" data-section="billing">
+            <i class="fa-solid fa-file-invoice-dollar nav-icon"></i>
+            <span class="nav-label">Billing</span>
+          </a>
+        </li>
+        <li class="nav-item active" role="none">
+          <a href="reports.html" class="nav-link" role="menuitem" data-section="reports">
+            <i class="fa-solid fa-chart-bar nav-icon"></i>
+            <span class="nav-label">Reports</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="settings.html" class="nav-link" role="menuitem" data-section="settings">
+            <i class="fa-solid fa-gear nav-icon"></i>
+            <span class="nav-label">Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="clinic-info">
+        <div class="clinic-avatar"><i class="fa-solid fa-hospital"></i></div>
+        <div class="clinic-details">
+          <span class="clinic-name">Green Leaf Clinic</span>
+          <span class="clinic-status"><span class="status-dot"></span>Online</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN WRAPPER ===== -->
+  <div class="main-wrapper" id="mainWrapper">
+
+    <!-- ===== TOP NAVBAR ===== -->
+    <header class="topbar" role="banner">
+      <div class="topbar-left">
+        <button class="menu-btn" id="menuBtn" aria-label="Open sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="page-title">
+          <h1 id="pageTitle">Analytics & Reports</h1>
+          <p class="breadcrumb"><a href="index.html" style="color:var(--muted);text-decoration:none;">Dashboard</a> / <strong style="color:var(--text);">Monthly Insights</strong></p>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="search-bar">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="search" id="globalSearch" placeholder="Search reports…" />
+        </div>
+
+        <button class="icon-btn" id="notifBtn" aria-label="Notifications" title="Notifications">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+
+        <div class="admin-profile" id="adminProfile" tabindex="0" aria-haspopup="true" aria-expanded="false">
+          <div class="admin-avatar"><i class="fa-solid fa-user-doctor"></i></div>
+          <div class="admin-info">
+            <span class="admin-name">Dr. Priya S.</span>
+            <span class="admin-role">Administrator</span>
+          </div>
+          <i class="fa-solid fa-chevron-down dropdown-caret"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== PAGE CONTENT ===== -->
+    <main class="content" id="mainContent" role="main">
+
+      <!-- Summary Stats Cards -->
+      <div class="stats-grid" style="margin-bottom:2rem">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-icon" style="background:rgba(96, 165, 250, 0.1);color:var(--accent)"><i class="fa-solid fa-indian-rupee-sign"></i></span>
+            <span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> 12%</span>
+          </div>
+          <div class="stat-value" data-target="84500" data-prefix="₹">₹0</div>
+          <div class="stat-label">Total Revenue (May)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-icon" style="background:rgba(16, 185, 129, 0.1);color:#10b981"><i class="fa-solid fa-users"></i></span>
+            <span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> 8%</span>
+          </div>
+          <div class="stat-value" data-target="190">0</div>
+          <div class="stat-label">Total Patients</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-icon" style="background:rgba(245, 158, 11, 0.1);color:#f59e0b"><i class="fa-solid fa-calendar-check"></i></span>
+            <span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> 15%</span>
+          </div>
+          <div class="stat-value" data-target="210">0</div>
+          <div class="stat-label">Total Appointments</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-icon" style="background:rgba(239, 68, 68, 0.1);color:#ef4444"><i class="fa-solid fa-circle-xmark"></i></span>
+            <span class="stat-trend down"><i class="fa-solid fa-arrow-down"></i> 3%</span>
+          </div>
+          <div class="stat-value" data-target="14">0</div>
+          <div class="stat-label">Cancellations</div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-row" style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem; margin-bottom:2rem">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Revenue Trends (Year 2026)</h3>
+            <div class="card-actions">
+              <button class="btn btn-secondary btn-sm">Download PDF</button>
+            </div>
+          </div>
+          <div class="card-body">
+             <!-- Reusing the chart logic from dashboard -->
+             <div class="chart-container" style="height:300px; margin-top:1.5rem">
+                <div class="chart-area" id="chartArea"></div>
+                <div class="chart-labels" id="chartLabels"></div>
+             </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Patient Demographics</h3>
+          </div>
+          <div class="card-body">
+             <div class="donut-container" style="padding:1rem 0">
+                <svg viewBox="0 0 150 150" class="donut-svg" style="width:180px; height:180px">
+                  <circle cx="75" cy="75" r="62" class="donut-bg"></circle>
+                  <circle cx="75" cy="75" r="62" class="donut-seg" id="seg-new" stroke="var(--accent)"></circle>
+                  <circle cx="75" cy="75" r="62" class="donut-seg" id="seg-repeat" stroke="#7c3aed"></circle>
+                  <circle cx="75" cy="75" r="62" class="donut-seg" id="seg-old" stroke="#0d9488"></circle>
+                  <g class="donut-text">
+                    <text x="75" y="72" class="donut-number" id="donutTotal">0</text>
+                    <text x="75" y="92" class="donut-label">Patients</text>
+                  </g>
+                </svg>
+             </div>
+             <div class="donut-legend" style="margin-top:1rem">
+                <div class="legend-item">
+                  <span class="dot" style="background:var(--accent)"></span>
+                  <span class="label">New</span>
+                  <span class="val" id="leg-new">0</span>
+                </div>
+                <div class="legend-item">
+                  <span class="dot" style="background:#7c3aed"></span>
+                  <span class="label">Repeat</span>
+                  <span class="val" id="leg-repeat">0</span>
+                </div>
+                <div class="legend-item">
+                  <span class="dot" style="background:#0d9488"></span>
+                  <span class="label">Chronic</span>
+                  <span class="val" id="leg-old">0</span>
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Monthly Growth Breakdown</h3>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Revenue</th>
+                <th>Patients</th>
+                <th>Appointments</th>
+                <th>Growth</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

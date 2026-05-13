@@ -18,7 +18,7 @@
     <div class="sidebar-header">
       <div class="logo">
         <span class="logo-icon"><i class="fa-solid fa-leaf"></i></span>
-        <span class="logo-text">HomeoCareCRM</span>
+        <span class="logo-text clinic-name">HomeoCareCRM</span>
       </div>
       <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
         <i class="fa-solid fa-bars"></i>
@@ -54,19 +54,19 @@
           </a>
         </li>
         <li class="nav-item" role="none">
-          <a href="#billing" class="nav-link" role="menuitem" id="nav-billing" data-section="billing">
+          <a href="billing.html" class="nav-link" role="menuitem" id="nav-billing" data-section="billing">
             <i class="fa-solid fa-file-invoice-dollar nav-icon"></i>
             <span class="nav-label">Billing</span>
           </a>
         </li>
         <li class="nav-item" role="none">
-          <a href="#reports" class="nav-link" role="menuitem" id="nav-reports" data-section="reports">
+          <a href="reports.html" class="nav-link" role="menuitem" id="nav-reports" data-section="reports">
             <i class="fa-solid fa-chart-bar nav-icon"></i>
             <span class="nav-label">Reports</span>
           </a>
         </li>
         <li class="nav-item" role="none">
-          <a href="#settings" class="nav-link" role="menuitem" id="nav-settings" data-section="settings">
+          <a href="settings.html" class="nav-link" role="menuitem" id="nav-settings" data-section="settings">
             <i class="fa-solid fa-gear nav-icon"></i>
             <span class="nav-label">Settings</span>
           </a>
@@ -220,6 +220,57 @@
           <button type="submit" class="btn btn-primary">Save Appointment</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ===== PATIENT DETAILS MODAL ===== -->
+  <div class="modal-overlay" id="patientDetailsModalOverlay" hidden>
+    <div class="modal" style="max-width: 800px; width: 95%">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-id-card"></i> Patient Profile</h2>
+        <button class="modal-close" id="closeDetailsModal">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 24px; display: grid; grid-template-columns: 250px 1fr; gap: 24px">
+        
+        <!-- Sidebar Info -->
+        <div class="patient-sidebar" style="border-right: 1px solid var(--border); padding-right: 24px">
+          <div id="detAvatar" style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 1rem; display: grid; place-items: center; font-size: 32px; color: #fff; font-weight: 800"></div>
+          <h3 id="detName" style="text-align: center; margin-bottom: 0.5rem"></h3>
+          <p id="detID" style="text-align: center; color: var(--accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 1.5rem"></p>
+          
+          <div class="space-y-3" style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.9rem">
+            <div style="display: flex; justify-content: space-between">
+              <span style="color: var(--muted)">Age:</span>
+              <span id="detAge"></span>
+            </div>
+            <div style="display: flex; justify-content: space-between">
+              <span style="color: var(--muted)">Gender:</span>
+              <span>Female</span>
+            </div>
+            <div style="display: flex; justify-content: space-between">
+              <span style="color: var(--muted)">Condition:</span>
+              <span id="detCondition" style="text-align: right"></span>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" id="detNewBillBtn" style="width: 100%; margin-top: 2rem">
+            <i class="fa-solid fa-file-invoice-dollar"></i> New Bill
+          </button>
+        </div>
+
+        <!-- History Content -->
+        <div class="patient-content">
+          <div class="tabs" style="display: flex; gap: 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem">
+            <span style="padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent); color: var(--text); font-weight: 600; cursor: pointer">Consultation History</span>
+            <span style="padding-bottom: 0.5rem; color: var(--muted); cursor: pointer">Documents</span>
+          </div>
+
+          <div class="history-list" id="detHistory" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 10px">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 

@@ -18,7 +18,7 @@
     <div class="sidebar-header">
       <div class="logo">
         <span class="logo-icon"><i class="fa-solid fa-leaf"></i></span>
-        <span class="logo-text">HomeoCareCRM</span>
+        <span class="logo-text clinic-name">HomeoCareCRM</span>
       </div>
       <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
         <i class="fa-solid fa-bars"></i>
@@ -54,19 +54,19 @@
           </a>
         </li>
         <li class="nav-item" role="none">
-          <a href="#billing" class="nav-link" role="menuitem" data-section="billing">
+          <a href="billing.html" class="nav-link" role="menuitem" id="nav-billing" data-section="billing">
             <i class="fa-solid fa-file-invoice-dollar nav-icon"></i>
             <span class="nav-label">Billing</span>
           </a>
         </li>
         <li class="nav-item" role="none">
-          <a href="#reports" class="nav-link" role="menuitem" data-section="reports">
+          <a href="reports.html" class="nav-link" role="menuitem" data-section="reports">
             <i class="fa-solid fa-chart-bar nav-icon"></i>
             <span class="nav-label">Reports</span>
           </a>
         </li>
         <li class="nav-item" role="none">
-          <a href="#settings" class="nav-link" role="menuitem" data-section="settings">
+          <a href="settings.html" class="nav-link" role="menuitem" data-section="settings">
             <i class="fa-solid fa-gear nav-icon"></i>
             <span class="nav-label">Settings</span>
           </a>
@@ -146,7 +146,7 @@
           <div class="card-header">
             <h2 class="card-title"><i class="fa-solid fa-pills"></i> Patient Prescriptions</h2>
             <div class="card-actions">
-              <button class="btn btn-primary">
+              <button class="btn btn-primary" id="addPrescriptionBtn">
                 <i class="fa-solid fa-plus"></i> New Prescription
               </button>
             </div>
@@ -216,6 +216,42 @@
         <div class="form-actions">
           <button type="button" class="btn btn-ghost" id="cancelModal">Cancel</button>
           <button type="submit" class="btn btn-primary">Save Appointment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: Add Prescription ===== -->
+  <div class="modal-overlay" id="prescriptionModalOverlay" role="dialog" aria-modal="true" aria-labelledby="prescModalTitle" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="prescModalTitle"><i class="fa-solid fa-prescription"></i> New Prescription</h2>
+        <button class="modal-close" id="prescModalClose" aria-label="Close modal">&times;</button>
+      </div>
+      <form class="modal-form" id="prescriptionForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prescPatient">Patient Name</label>
+            <input type="text" id="prescPatient" placeholder="Patient name" required />
+          </div>
+          <div class="form-group">
+            <label for="prescMedicine">Medicine Name</label>
+            <input type="text" id="prescMedicine" placeholder="e.g. Arnica 200" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prescDosage">Dosage</label>
+            <input type="text" id="prescDosage" placeholder="e.g. 5 drops" required />
+          </div>
+          <div class="form-group">
+            <label for="prescFreq">Frequency</label>
+            <input type="text" id="prescFreq" placeholder="e.g. 3 times a day" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" id="cancelPrescModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Prescription</button>
         </div>
       </form>
     </div>
