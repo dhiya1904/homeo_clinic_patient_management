@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Patient Registration - Jireh Homeopathy" />
+  <title>Patient Registration | Jireh Homeopathy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root {
+      --jireh-teal: #0d9488;
+      --jireh-bg: #f8fafc;
+      --jireh-card: #ffffff;
+      --jireh-border: #e2e8f0;
+      --jireh-text: #1e293b;
+      --jireh-muted: #64748b;
+    }
+
+    body {
+      background-color: var(--jireh-bg);
+      color: var(--jireh-text);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .reg-container {
+      width: 100%;
+      max-width: 800px;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .reg-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .reg-logo {
+      color: var(--jireh-teal);
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .reg-header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .reg-header p {
+      color: var(--jireh-muted);
+      font-size: 16px;
+    }
+
+    .reg-card {
+      background: var(--jireh-card);
+      border: 1px solid var(--jireh-border);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-section {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--jireh-border);
+    }
+
+    .form-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--jireh-teal);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--jireh-muted);
+    }
+
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+      padding: 12px 16px;
+      border: 1px solid var(--jireh-border);
+      border-radius: 12px;
+      font-size: 15px;
+      background: #fdfdfd;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus, 
+    .form-group select:focus, 
+    .form-group textarea:focus {
+      border-color: var(--jireh-teal);
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--jireh-teal);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 20px;
+    }
+
+    .btn-submit:hover {
+      background: #0f766e;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(13, 148, 136, 0.2);
+    }
+
+    .footer-links {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--jireh-muted);
+    }
+
+    .footer-links a {
+      color: var(--jireh-teal);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="reg-container">
+    <div class="reg-header">
+      <div class="reg-logo">
+        <i class="fa-solid fa-house-medical"></i>
+      </div>
+      <h1>Jireh Homeopathy</h1>
+      <p>Please provide your details to begin your consultation</p>
+    </div>
+
+    <div class="reg-card">
+      <form id="publicRegForm">
+        <!-- Section 1: Basic Info -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="fa-solid fa-user"></i> Personal Information
+          </div>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Full Name</label>
+              <input type="text" placeholder="e.g. John Doe" required />
+            </div>
+            <div class="form-group">
+              <label>Age</label>
+              <input type="number" placeholder="Years" required />
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <select required>
+                <option value="">Select</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Occupation</label>
+              <input type="text" placeholder="e.g. Teacher" />
+            </div>
+            <div class="form-group">
+              <label>Marital Status</label>
+              <select>
+                <option>Single</option>
+                <option>Married</option>
+                <option>Widowed</option>
+                <option>Divorced</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Contact -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="fa-solid fa-phone"></i> Contact Details
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" placeholder="+91 XXXXX XXXXX" required />
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" placeholder="Optional" />
+            </div>
+            <div class="form-group full-width">
+              <label>Home Address</label>
+              <textarea placeholder="City, State, Pincode" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Complaints -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="fa-solid fa-notes-medical"></i> Health Concerns
+          </div>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>What are your main complaints?</label>
+              <textarea placeholder="Describe what you are feeling..." rows="4" required></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>How long have you had these symptoms?</label>
+              <input type="text" placeholder="e.g. 2 weeks, 3 months" required />
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          Submit Registration
+        </button>
+      </form>
+    </div>
+
+    <div class="footer-links">
+      Already registered? <a href="login.html">Clinic Staff Login</a>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <script>
+    // We point to the server address we created
+    const API_URL = "http://localhost:5000/api";
+
+    document.getElementById('publicRegForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = this.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = "Submitting...";
+
+      // 1. Collect what the patient typed
+      const patientData = {
+        id: "REG-" + Date.now().toString().slice(-4), // Create a simple temporary ID
+        name: this.querySelector('input[type="text"]').value,
+        age: this.querySelector('input[type="number"]').value,
+        gender: this.querySelector('select').value,
+        phone: this.querySelector('input[type="tel"]').value,
+        address: this.querySelector('textarea').value,
+        complaints: this.querySelectorAll('textarea')[1].value
+      };
+
+      try {
+        // 2. Send it to the server's "Pantry" (Database)
+        const response = await fetch(`${API_URL}/patients`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patientData)
+        });
+
+        if (response.ok) {
+          showToast("Registration successful! Thank you.");
+          this.reset();
+        } else {
+          showToast("Something went wrong. Please try again.", "error");
+        }
+      } catch (err) {
+        showToast("Cannot connect to clinic server.", "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Submit Registration";
+      }
+    });
+
+    // Simple toast function for this page
+    function showToast(msg, type = "success") {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.background = type === "error" ? "#ef4444" : "#0d9488";
+      toast.className = "toast show";
+      setTimeout(() => { toast.className = "toast"; }, 3000);
+    }
+  </script>
+</body>
+</html>

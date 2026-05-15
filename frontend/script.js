@@ -603,25 +603,58 @@ function initQuickActions() {
 // ── NEW PATIENT FORM ──────────────────────────────────────────
 function initNewPatientForm() {
   const form = document.getElementById("newPatientForm");
-  if (form) {
-    form.addEventListener("submit", e => {
-      e.preventDefault();
-      
-      // Get the button to show loading state (optional, just disabled for now)
-      const submitBtn = form.querySelector('button[type="submit"]');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registering...';
-      }
+  if (!form) return;
 
-      showToast("Patient registered successfully!");
-      
-      // Redirect back to dashboard after 1.5s
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 1500);
-    });
-  }
+  // We add 'async' here because saving to a database takes a little time, 
+  // and we want to "wait" for the server to finish before moving on.
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    // 1. Gather all the information the user typed into the boxes
+    const patientData = {
+      // We create a random ID (like P-1234) for the new patient
+      id: "P-" + (Math.floor(Math.random() * 9000) + 1000),
+      name: document.getElementById("pName").value,
+      age: document.getElementById("pAge").value,
+      gender: document.getElementById("pGender").value,
+      phone: document.getElementById("pPhone").value,
+      address: document.getElementById("pAddress").value,
+      complaints: document.getElementById("pComplaints").value
+    };
+
+    // Show a loading spinner on the button so the user knows something is happening
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving to Database...';
+    }
+
+    try {
+      // 2. The FETCH command: This is the actual "Phone Call" to your Backend server.
+      // We send the patientData as a "JSON" string (the language servers speak).
+      const response = await fetch(`${API_URL}/patients`, {
+        method: "POST", // POST means "Create New"
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patientData)
+      });
+
+      if (response.ok) {
+        // If the server says "OK", show a success message
+        showToast("Patient saved to permanent database!");
+        form.reset();
+        
+        // Take the user back to the dashboard after a short delay
+        setTimeout(() => { window.location.href = "index.html"; }, 1500);
+      } else {
+        showToast("Database error: Could not save patient.", "error");
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    } catch (err) {
+      // This happens if the server is offline or there is no internet
+      showToast("Could not reach the server. Is the backend running?", "error");
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
 }
 
 // ── INIT ──────────────────────────────────────────────────────
@@ -1020,7 +1053,76 @@ function renderCalendar() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+const API_URL = "http://localhost:5000/api";
+
+function initLoginPage() {
+  const form = document.getElementById("loginForm");
+  if (!form) return;
+
+  const togglePass = document.getElementById("togglePass");
+  const passInput = document.getElementById("password");
+
+  if (togglePass && passInput) {
+    togglePass.addEventListener("click", () => {
+      const isPass = passInput.type === "password";
+      passInput.type = isPass ? "text" : "password";
+      togglePass.classList.toggle("fa-eye");
+      togglePass.classList.toggle("fa-eye-slash");
+    });
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const btn = document.getElementById("loginBtn");
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
+
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: email, password: password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("clinicName", data.clinic_name);
+        showToast("Login successful! Welcome back.");
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1000);
+      } else {
+        showToast(data.error || "Login failed", "error");
+        btn.disabled = false;
+        btn.innerHTML = 'Sign In to Dashboard <i class="fa-solid fa-arrow-right"></i>';
+      }
+    } catch (err) {
+      showToast("Server is not responding. Is the backend running?", "error");
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In to Dashboard <i class="fa-solid fa-arrow-right"></i>';
+    }
+  });
+}
+
+async function getBackendPatients() {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(`${API_URL}/patients`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if (response.ok) return await response.json();
+  } catch (err) {
+    console.error("Backend error:", err);
+  }
+  return [];
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
   initTheme();
   initClinicName();
   initSidebar();
@@ -1038,6 +1140,17 @@ document.addEventListener("DOMContentLoaded", () => {
   initReportsPage();
   initSettingsPage();
   initCalendar();
+  initLoginPage();
+
+  // If we are on the patients page, refresh from backend
+  if (document.getElementById("patientsTable")) {
+    const realData = await getBackendPatients();
+    if (realData.length > 0) {
+      renderPatients(realData);
+    } else {
+      renderPatients(PATIENTS); // Fallback to mock if DB empty
+    }
+  }
 
   // If calendar is default, render it
   if (document.getElementById("appointmentsCalendar")?.style.display !== "none") {
