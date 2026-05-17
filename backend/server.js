@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path'); // Added the missing path import
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { initDb } = require('./db');
@@ -11,6 +12,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'homeocare-secret-key-2026';
 
 app.use(cors());
 app.use(express.json());
+
+// --- SECURITY HEADERS ---
+// This tells the browser: "It is safe to run my scripts and styles"
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;");
+  next();
+});
 
 let db;
 
@@ -46,6 +54,24 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  try {
+    const user = await db.get('SELECT * FROM users WHERE id = ?', [req.user.id]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const validPass = await bcrypt.compare(currentPassword, user.password);
+    if (!validPass) return res.status(400).json({ error: 'Incorrect current password' });
+
+    const hashedNew = await bcrypt.hash(newPassword, 10);
+    await db.run('UPDATE users SET password = ? WHERE id = ?', [hashedNew, req.user.id]);
+    
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update password' });
+  }
+});
+
 // --- PATIENT ROUTES ---
 
 app.get('/api/patients', authenticateToken, async (req, res) => {
@@ -58,7 +84,6 @@ app.get('/api/patients', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/patients', async (req, res) => {
-  // Note: Allow public registration without token if needed, or check logic
   const { id, name, age, gender, phone, email, address, occupation, complaints } = req.body;
   try {
     await db.run(
@@ -99,6 +124,25 @@ app.post('/api/appointments', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to schedule appointment' });
   }
 });
+
+// --- BILLING ROUTES ---
+
+app.post('/api/billing', authenticateToken, async (req, res) => {
+  const { id, patient_id, total_amount, items_json } = req.body;
+  try {
+    await db.run(
+      'INSERT INTO billing (id, patient_id, total_amount, items_json) VALUES (?, ?, ?, ?)',
+      [id, patient_id, total_amount, JSON.stringify(items_json)]
+    );
+    res.status(201).json({ message: 'Invoice saved successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save invoice' });
+  }
+});
+
+// --- STATIC FILES (Moved to bottom) ---
+// We move this to the bottom so it doesn't "steal" requests from our API routes
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // Initialize DB and start server
 initDb().then(database => {

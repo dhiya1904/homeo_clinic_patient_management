@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Homeopathy Clinic CRM Dashboard – Manage patients, appointments, billing, and reports in one place." />
-  <title>HomeoCareCRM | Dashboard</title>
+  <title>Jireh Homeopathy | Appointments</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -17,8 +17,8 @@
   <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
     <div class="sidebar-header">
       <div class="logo">
-        <span class="logo-icon"><i class="fa-solid fa-leaf"></i></span>
-        <span class="logo-text clinic-name">HomeoCareCRM</span>
+        <span class="logo-icon"><i class="fa-solid fa-house-medical"></i></span>
+        <span class="logo-text clinic-name">Jireh Homeopathy</span>
       </div>
       <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
         <i class="fa-solid fa-bars"></i>
@@ -40,6 +40,12 @@
             <span class="nav-badge">128</span>
           </a>
         </li>
+        <li class="nav-item" role="none">
+          <a href="register.html" class="nav-link" role="menuitem" id="nav-register" data-section="register">
+            <i class="fa-solid fa-user-plus nav-icon"></i>
+            <span class="nav-label">Register</span>
+          </a>
+        </li>
         <li class="nav-item active" role="none">
           <a href="appointments.html" class="nav-link" role="menuitem" id="nav-appointments" data-section="appointments">
             <i class="fa-solid fa-calendar-check nav-icon"></i>
@@ -50,7 +56,7 @@
         <li class="nav-item" role="none">
           <a href="medicines.html" class="nav-link" role="menuitem" id="nav-medicines" data-section="medicines">
             <i class="fa-solid fa-flask nav-icon"></i>
-            <span class="nav-label">Medicines</span>
+            <span class="nav-label">Prescriptions</span>
           </a>
         </li>
         <li class="nav-item" role="none">
@@ -78,7 +84,7 @@
       <div class="clinic-info">
         <div class="clinic-avatar"><i class="fa-solid fa-hospital"></i></div>
         <div class="clinic-details">
-          <span class="clinic-name">Green Leaf Clinic</span>
+          <span class="clinic-name">Jireh Homeopathy</span>
           <span class="clinic-status"><span class="status-dot"></span>Online</span>
         </div>
       </div>
@@ -102,7 +108,7 @@
 
       <div class="topbar-right">
         <div class="topbar-actions">
-          <a href="new-patient.html" class="btn-topbar" id="qa-new-patient" aria-label="Register New Patient" style="text-decoration: none;">
+          <a href="register.html" class="btn-topbar" id="qa-new-patient" aria-label="Register New Patient" style="text-decoration: none;">
             <i class="fa-solid fa-user-plus"></i> New Patient
           </a>
           <button class="btn-topbar btn-topbar--teal" id="qa-book-apt" aria-label="Book Appointment">

@@ -33,19 +33,29 @@
   --topbar-bg: rgba(255, 255, 255, 0.85);
 }
 
-[data-theme="light"] .sidebar-header, 
-[data-theme="light"] .sidebar-footer {
-  border-bottom-color: var(--border);
-  border-top-color: var(--border);
+[data-theme="light"] .sidebar-header {
+  border-bottom: 1px solid var(--border);
 }
-
+[data-theme="light"] .sidebar-footer {
+  border-top: 1px solid var(--border);
+}
 [data-theme="light"] .nav-link { color: #64748b; }
-[data-theme="light"] .nav-link:hover, 
+[data-theme="light"] .nav-link:hover,
 [data-theme="light"] .nav-item.active .nav-link { background: var(--sidebar-hover); color: var(--accent); }
-[data-theme="light"] .logo-text,
+[data-theme="light"] .logo-text { color: #1e293b; }
 [data-theme="light"] .clinic-name { color: #1e293b; }
+[data-theme="light"] .clinic-status { color: #64748b; }
 [data-theme="light"] .sidebar-toggle { color: #64748b; }
-[data-theme="light"] .sidebar-toggle:hover { color: var(--accent); }
+[data-theme="light"] .sidebar-toggle:hover { color: var(--accent); background: var(--sidebar-hover); }
+[data-theme="light"] .topbar { background: rgba(255,255,255,0.9); }
+[data-theme="light"] .admin-profile { background: #f1f5f9; border-color: #e2e8f0; }
+[data-theme="light"] .admin-profile:hover { background: #e2e8f0; }
+[data-theme="light"] .search-bar { background: #ffffff; }
+[data-theme="light"] .search-bar input { color: #1e293b; }
+[data-theme="light"] .icon-btn { background: #ffffff; border-color: #e2e8f0; color: #64748b; }
+[data-theme="light"] .icon-btn:hover { background: #e2e8f0; }
+[data-theme="light"] .data-table th { background: #f8fafc; }
+[data-theme="light"] .followup-item { background: #f8fafc; }
 body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
 
 /* ===== SCROLLBAR ===== */
@@ -113,10 +123,30 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .admin-name { font-size: 15px; font-weight: 600; }
 .admin-role { font-size: 13px; color: var(--muted); }
 .dropdown-caret { font-size: 13px; color: var(--muted); margin-left: 6px; }
-.admin-dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.12); min-width: 180px; z-index: 999; overflow: hidden; }
+.admin-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+  min-width: 190px;
+  z-index: 9999;
+  overflow: hidden;
+  transform-origin: top right;
+  animation: dropdownIn .18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes dropdownIn {
+  from { opacity: 0; transform: scale(0.94) translateY(-6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
 .admin-dropdown a { display: flex; align-items: center; gap: 10px; padding: 12px 16px; font-size: 14px; color: var(--text); text-decoration: none; transition: background var(--transition); }
 .admin-dropdown a:hover { background: var(--bg); }
 .admin-profile.open .admin-dropdown { display: block; }
+.dropdown-caret { transition: transform 0.22s ease; }
+.admin-profile.open .dropdown-caret { transform: rotate(180deg); }
 
 /* ===== CONTENT ===== */
 .content { padding: 24px; display: flex; flex-direction: column; gap: 24px; }
@@ -462,5 +492,142 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
     display: block !important;
   }
   @page { margin: 0; }
+}
+
+
+/* ===== CASE SHEET SPECIFIC STYLES ===== */
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: var(--bg);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  border-radius: 12px 12px 0 0;
+  transition: background-color 0.2s ease;
+}
+.collapsible-header:hover {
+  background-color: #f1f5f9;
+}
+.collapsible-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.collapsible-icon {
+  transition: transform 0.3s ease;
+  color: var(--muted);
+}
+.form-section-wrapper {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  background: var(--card);
+  overflow: hidden;
+}
+.collapsible-content {
+  padding: 24px;
+  display: none;
+}
+.form-section-wrapper.expanded .collapsible-content {
+  display: block;
+  animation: slideDown 0.3s ease-out forwards;
+}
+.form-section-wrapper.expanded .collapsible-icon {
+  transform: rotate(180deg);
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--card);
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  z-index: 100;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+}
+
+.dynamic-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+.dynamic-table th {
+  background: var(--bg);
+  padding: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 2px solid var(--border);
+}
+.dynamic-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.dynamic-table input, .dynamic-table select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+.btn-remove-row {
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+}
+.btn-remove-row:hover {
+  background: #fee2e2;
+}
+
+@media print {
+  .sidebar, .topbar, .sticky-footer, .btn-remove-row, .btn-add-row, .collapsible-icon {
+    display: none !important;
+  }
+  .main-wrapper {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  .collapsible-content {
+    display: block !important;
+    padding: 12px 0 !important;
+  }
+  .form-section-wrapper {
+    border: none !important;
+    margin-bottom: 12px !important;
+    break-inside: avoid;
+  }
+  .collapsible-header {
+    padding: 8px 0;
+    border-bottom: 2px solid #000;
+    background: none !important;
+  }
+  body, .content, .card {
+    background: white !important;
+    box-shadow: none !important;
+  }
+  input, select, textarea {
+    border: none !important;
+    background: none !important;
+    padding: 4px 0 !important;
+    border-bottom: 1px solid #ddd !important;
+    border-radius: 0 !important;
+  }
 }
 

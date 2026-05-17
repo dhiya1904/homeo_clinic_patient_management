@@ -3,324 +3,742 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Patient Registration - Jireh Homeopathy" />
-  <title>Patient Registration | Jireh Homeopathy</title>
+  <meta name="description" content="Homeopathy Case Sheet - Jireh Homeopathy" />
+  <title>Jireh Homeopathy | Patient Registration</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="style.css" />
-  <style>
-    :root {
-      --jireh-teal: #0d9488;
-      --jireh-bg: #f8fafc;
-      --jireh-card: #ffffff;
-      --jireh-border: #e2e8f0;
-      --jireh-text: #1e293b;
-      --jireh-muted: #64748b;
-    }
-
-    body {
-      background-color: var(--jireh-bg);
-      color: var(--jireh-text);
-      font-family: 'Inter', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 40px 20px;
-    }
-
-    .reg-container {
-      width: 100%;
-      max-width: 800px;
-      animation: fadeIn 0.6s ease-out;
-    }
-
-    .reg-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .reg-logo {
-      color: var(--jireh-teal);
-      font-size: 40px;
-      margin-bottom: 12px;
-    }
-
-    .reg-header h1 {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-    }
-
-    .reg-header p {
-      color: var(--jireh-muted);
-      font-size: 16px;
-    }
-
-    .reg-card {
-      background: var(--jireh-card);
-      border: 1px solid var(--jireh-border);
-      border-radius: 24px;
-      padding: 40px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    }
-
-    .form-section {
-      margin-bottom: 32px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid var(--jireh-border);
-    }
-
-    .form-section:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-    }
-
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--jireh-teal);
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
-
-    @media (max-width: 600px) {
-      .form-grid { grid-template-columns: 1fr; }
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .form-group label {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--jireh-muted);
-    }
-
-    .form-group input, 
-    .form-group select, 
-    .form-group textarea {
-      padding: 12px 16px;
-      border: 1px solid var(--jireh-border);
-      border-radius: 12px;
-      font-size: 15px;
-      background: #fdfdfd;
-      transition: all 0.2s;
-    }
-
-    .form-group input:focus, 
-    .form-group select:focus, 
-    .form-group textarea:focus {
-      border-color: var(--jireh-teal);
-      outline: none;
-      box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
-    }
-
-    .full-width {
-      grid-column: 1 / -1;
-    }
-
-    .btn-submit {
-      width: 100%;
-      background: var(--jireh-teal);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin-top: 20px;
-    }
-
-    .btn-submit:hover {
-      background: #0f766e;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(13, 148, 136, 0.2);
-    }
-
-    .footer-links {
-      text-align: center;
-      margin-top: 24px;
-      font-size: 14px;
-      color: var(--jireh-muted);
-    }
-
-    .footer-links a {
-      color: var(--jireh-teal);
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
 </head>
 <body>
 
-  <div class="reg-container">
-    <div class="reg-header">
-      <div class="reg-logo">
-        <i class="fa-solid fa-house-medical"></i>
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon"><i class="fa-solid fa-house-medical"></i></span>
+        <span class="logo-text clinic-name">Jireh Homeopathy</span>
       </div>
-      <h1>Jireh Homeopathy</h1>
-      <p>Please provide your details to begin your consultation</p>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
     </div>
 
-    <div class="reg-card">
-      <form id="publicRegForm">
-        <!-- Section 1: Basic Info -->
-        <div class="form-section">
-          <div class="section-title">
-            <i class="fa-solid fa-user"></i> Personal Information
-          </div>
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label>Full Name</label>
-              <input type="text" placeholder="e.g. John Doe" required />
-            </div>
-            <div class="form-group">
-              <label>Age</label>
-              <input type="number" placeholder="Years" required />
-            </div>
-            <div class="form-group">
-              <label>Gender</label>
-              <select required>
-                <option value="">Select</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Occupation</label>
-              <input type="text" placeholder="e.g. Teacher" />
-            </div>
-            <div class="form-group">
-              <label>Marital Status</label>
-              <select>
-                <option>Single</option>
-                <option>Married</option>
-                <option>Widowed</option>
-                <option>Divorced</option>
-              </select>
-            </div>
-          </div>
-        </div>
+    <nav class="sidebar-nav">
+      <ul class="nav-list" role="menubar">
+        <li class="nav-item" role="none">
+          <a href="index.html" class="nav-link" role="menuitem" data-section="dashboard">
+            <i class="fa-solid fa-gauge-high nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="patients.html" class="nav-link" role="menuitem" data-section="patients">
+            <i class="fa-solid fa-user-group nav-icon"></i>
+            <span class="nav-label">Patients</span>
+            <span class="nav-badge">128</span>
+          </a>
+        </li>
+        <li class="nav-item active" role="none">
+          <a href="register.html" class="nav-link" role="menuitem" id="nav-register" data-section="register">
+            <i class="fa-solid fa-user-plus nav-icon"></i>
+            <span class="nav-label">Register</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="appointments.html" class="nav-link" role="menuitem" data-section="appointments">
+            <i class="fa-solid fa-calendar-check nav-icon"></i>
+            <span class="nav-label">Appointments</span>
+            <span class="nav-badge">12</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="medicines.html" class="nav-link" role="menuitem" data-section="medicines">
+            <i class="fa-solid fa-flask nav-icon"></i>
+            <span class="nav-label">Medicines</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="billing.html" class="nav-link" role="menuitem" id="nav-billing" data-section="billing">
+            <i class="fa-solid fa-file-invoice-dollar nav-icon"></i>
+            <span class="nav-label">Billing</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="reports.html" class="nav-link" role="menuitem" data-section="reports">
+            <i class="fa-solid fa-chart-bar nav-icon"></i>
+            <span class="nav-label">Reports</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a href="settings.html" class="nav-link" role="menuitem" data-section="settings">
+            <i class="fa-solid fa-gear nav-icon"></i>
+            <span class="nav-label">Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
 
-        <!-- Section 2: Contact -->
-        <div class="form-section">
-          <div class="section-title">
-            <i class="fa-solid fa-phone"></i> Contact Details
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Phone Number</label>
-              <input type="tel" placeholder="+91 XXXXX XXXXX" required />
-            </div>
-            <div class="form-group">
-              <label>Email Address</label>
-              <input type="email" placeholder="Optional" />
-            </div>
-            <div class="form-group full-width">
-              <label>Home Address</label>
-              <textarea placeholder="City, State, Pincode" rows="2"></textarea>
-            </div>
-          </div>
+    <div class="sidebar-footer">
+      <div class="clinic-info">
+        <div class="clinic-avatar"><i class="fa-solid fa-hospital"></i></div>
+        <div class="clinic-details">
+          <span class="clinic-name">Jireh Homeopathy</span>
+          <span class="clinic-status"><span class="status-dot"></span>Online</span>
         </div>
+      </div>
+    </div>
+  </aside>
 
-        <!-- Section 3: Complaints -->
-        <div class="form-section">
-          <div class="section-title">
-            <i class="fa-solid fa-notes-medical"></i> Health Concerns
-          </div>
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label>What are your main complaints?</label>
-              <textarea placeholder="Describe what you are feeling..." rows="4" required></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>How long have you had these symptoms?</label>
-              <input type="text" placeholder="e.g. 2 weeks, 3 months" required />
-            </div>
-          </div>
-        </div>
+  <!-- ===== MAIN WRAPPER ===== -->
+  <div class="main-wrapper" id="mainWrapper">
 
-        <button type="submit" class="btn-submit">
-          Submit Registration
+    <!-- ===== TOP NAVBAR ===== -->
+    <header class="topbar" role="banner">
+      <div class="topbar-left">
+        <button class="menu-btn" id="menuBtn" aria-label="Open sidebar">
+          <i class="fa-solid fa-bars"></i>
         </button>
+        <div class="page-title">
+          <h1 id="pageTitle">Comprehensive Case Sheet</h1>
+          <p class="breadcrumb"><a href="index.html" style="color:var(--muted);text-decoration:none;">Dashboard</a> / <strong style="color:var(--text);">Register</strong></p>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button class="icon-btn" id="notifBtn" aria-label="Notifications" title="Notifications">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+
+        <div class="admin-profile" id="adminProfile" tabindex="0" aria-haspopup="true" aria-expanded="false">
+          <div class="admin-avatar">
+            <i class="fa-solid fa-user-doctor"></i>
+          </div>
+          <div class="admin-info">
+            <span class="admin-name">Dr. Priya S.</span>
+            <span class="admin-role">Administrator</span>
+          </div>
+          <i class="fa-solid fa-chevron-down dropdown-caret"></i>
+          <div class="admin-dropdown" id="adminDropdown" role="menu">
+            <a href="#" role="menuitem"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+            <a href="#" role="menuitem"><i class="fa-solid fa-key"></i> Change Password</a>
+            <a href="login.html" role="menuitem"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== PAGE CONTENT ===== -->
+    <main class="content" id="mainContent" role="main" style="padding-bottom: 80px;">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <p style="color: var(--muted); font-size: 14px;">Please fill in all known details. Fields marked with <span class="required">*</span> are mandatory.</p>
+        <div style="font-size: 14px; color: var(--muted);" id="saveStatus">Draft saved: Just now</div>
+      </div>
+
+      <form id="caseSheetForm" class="patient-form">
+        
+        <!-- SECTION 1: Basic Registration -->
+        <div class="form-section-wrapper expanded">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-address-card"></i> 1. Basic Registration Details</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+              <div class="form-group">
+                <label>Registration Number</label>
+                <input type="text" id="regNo" name="regNo" placeholder="Auto-generated" readonly style="background: #f1f5f9;" />
+              </div>
+              <div class="form-group">
+                <label>Date <span class="required">*</span></label>
+                <input type="date" id="regDate" name="regDate" required />
+              </div>
+              <div class="form-group">
+                <label>Referred By</label>
+                <input type="text" id="referredBy" name="referredBy" placeholder="Dr. Name / Website" />
+              </div>
+              <div class="form-group" style="grid-column: 1 / 3;">
+                <label>Full Name <span class="required">*</span></label>
+                <input type="text" id="fullName" name="fullName" required placeholder="Patient's Full Name" />
+              </div>
+              <div class="form-group">
+                <label>Gender <span class="required">*</span></label>
+                <select id="gender" name="gender" required>
+                  <option value="">Select</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Age</label>
+                <input type="number" id="age" name="age" placeholder="Years" />
+              </div>
+              <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" id="dob" name="dob" />
+              </div>
+              <div class="form-group">
+                <label>Marital Status</label>
+                <select id="maritalStatus" name="maritalStatus">
+                  <option value="">Select</option>
+                  <option>Single</option>
+                  <option>Married</option>
+                  <option>Divorced</option>
+                  <option>Widowed</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Occupation</label>
+                <input type="text" id="occupation" name="occupation" placeholder="e.g. Engineer" />
+              </div>
+              <div class="form-group">
+                <label>Education</label>
+                <input type="text" id="education" name="education" placeholder="e.g. B.Tech" />
+              </div>
+              <div class="form-group">
+                <label>Religion</label>
+                <input type="text" id="religion" name="religion" />
+              </div>
+              <div class="form-group">
+                <label>Diet Type</label>
+                <select id="dietType" name="dietType">
+                  <option value="">Select</option>
+                  <option>Vegetarian</option>
+                  <option>Non-Vegetarian</option>
+                  <option>Vegan</option>
+                  <option>Mixed</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Phone Number <span class="required">*</span></label>
+                <input type="tel" id="phone" name="phone" required placeholder="+91 XXXXX XXXXX" />
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Address</label>
+                <textarea id="address" name="address" rows="2" placeholder="Full residential address"></textarea>
+              </div>
+              <div class="form-group" style="grid-column: 1 / 3;">
+                <label>Provisional Diagnosis</label>
+                <input type="text" id="provisionalDiag" name="provisionalDiag" />
+              </div>
+              <div class="form-group" style="grid-column: 1 / 3;">
+                <label>Final Diagnosis</label>
+                <input type="text" id="finalDiag" name="finalDiag" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: Complaints -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-notes-medical"></i> 2. Complaints Section</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+              <div class="form-group">
+                <label>Chief Complaints & Associated Symptoms <span class="required">*</span></label>
+                <textarea id="complaints" name="complaints" rows="3" required placeholder="Describe main complaints..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>History of Present Illness</label>
+                <textarea id="hpi" name="hpi" rows="3" placeholder="Evolution of the current problem..."></textarea>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                <div class="form-group">
+                  <label>Onset Type</label>
+                  <select id="onsetType" name="onsetType">
+                    <option value="">Select</option>
+                    <option>Sudden</option>
+                    <option>Gradual</option>
+                    <option>Insidious</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Duration</label>
+                  <input type="text" id="duration" name="duration" placeholder="e.g. 3 months" />
+                </div>
+                <div class="form-group">
+                  <label>Precipitating Factors</label>
+                  <input type="text" id="precipitating" name="precipitating" placeholder="e.g. Cold weather, stress" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: Past Medical History -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> 3. Past Medical History</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <table class="dynamic-table" id="pastMedicalTable">
+              <thead>
+                <tr>
+                  <th>Disease/Condition</th>
+                  <th>Age/Year</th>
+                  <th>Duration</th>
+                  <th>Recovery</th>
+                  <th>Medication</th>
+                  <th>Adverse Events</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="text" name="pm_condition[]" /></td>
+                  <td><input type="text" name="pm_age[]" /></td>
+                  <td><input type="text" name="pm_duration[]" /></td>
+                  <td><input type="text" name="pm_recovery[]" /></td>
+                  <td><input type="text" name="pm_meds[]" /></td>
+                  <td><input type="text" name="pm_adverse[]" /></td>
+                  <td><button type="button" class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" class="btn btn-ghost btn-add-row" onclick="addRow('pastMedicalTable')"><i class="fa-solid fa-plus"></i> Add Row</button>
+          </div>
+        </div>
+
+        <!-- SECTION 4: Substance Use -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-wine-glass"></i> 4. Substance Use History</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <table class="dynamic-table" id="substanceTable">
+              <thead>
+                <tr>
+                  <th>Substance</th>
+                  <th>Amount/Frequency</th>
+                  <th>Age of Initiation</th>
+                  <th>Continuous Use?</th>
+                  <th>Last Use</th>
+                  <th>Withdrawal Symptoms</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <select name="sub_name[]">
+                      <option>Alcohol</option>
+                      <option>Nicotine / Smoking</option>
+                      <option>Cannabis</option>
+                      <option>Sedatives</option>
+                      <option>Tea/Coffee</option>
+                      <option>Sleeping Pills</option>
+                      <option>Other</option>
+                    </select>
+                  </td>
+                  <td><input type="text" name="sub_amt[]" /></td>
+                  <td><input type="number" name="sub_age[]" /></td>
+                  <td>
+                    <select name="sub_cont[]">
+                      <option>Yes</option><option>No</option>
+                    </select>
+                  </td>
+                  <td><input type="text" name="sub_last[]" /></td>
+                  <td><input type="text" name="sub_withdraw[]" /></td>
+                  <td><button type="button" class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" class="btn btn-ghost btn-add-row" onclick="addRow('substanceTable')"><i class="fa-solid fa-plus"></i> Add Row</button>
+          </div>
+        </div>
+
+        <!-- SECTION 5: Family History -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-people-roof"></i> 5. Family History</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <table class="dynamic-table" id="familyTable">
+              <thead>
+                <tr>
+                  <th>Relationship</th>
+                  <th>Status</th>
+                  <th>Age</th>
+                  <th>Illness History</th>
+                  <th>Cause of Death (if applicable)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="text" name="fam_rel[]" placeholder="e.g. Father" /></td>
+                  <td>
+                    <select name="fam_status[]">
+                      <option>Alive</option><option>Deceased</option>
+                    </select>
+                  </td>
+                  <td><input type="number" name="fam_age[]" /></td>
+                  <td><input type="text" name="fam_illness[]" /></td>
+                  <td><input type="text" name="fam_death[]" /></td>
+                  <td><button type="button" class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" class="btn btn-ghost btn-add-row" onclick="addRow('familyTable')"><i class="fa-solid fa-plus"></i> Add Row</button>
+          </div>
+        </div>
+
+        <!-- SECTION 6: Personal History -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-person"></i> 6. Personal History</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group"><label>Birth History</label><textarea rows="2" name="ph_birth"></textarea></div>
+              <div class="form-group"><label>Early Development</label><textarea rows="2" name="ph_dev"></textarea></div>
+              <div class="form-group"><label>Vaccination History</label><textarea rows="2" name="ph_vaccine"></textarea></div>
+              <div class="form-group"><label>Animal Bites</label><textarea rows="2" name="ph_bites"></textarea></div>
+              <div class="form-group"><label>Educational History</label><textarea rows="2" name="ph_edu"></textarea></div>
+              <div class="form-group"><label>Occupational History</label><textarea rows="2" name="ph_occ"></textarea></div>
+              <div class="form-group"><label>Sexual & Marital History</label><textarea rows="2" name="ph_marital"></textarea></div>
+              <div class="form-group"><label>Religious History</label><textarea rows="2" name="ph_religion"></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 7: Physical Generals -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-child-reaching"></i> 7. Physical Generals</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+              <div class="form-group"><label>Appetite</label><input type="text" name="pg_appetite" /></div>
+              <div class="form-group"><label>Thirst</label><input type="text" name="pg_thirst" /></div>
+              <div class="form-group"><label>Bowels</label><input type="text" name="pg_bowels" /></div>
+              <div class="form-group"><label>Bladder</label><input type="text" name="pg_bladder" /></div>
+              <div class="form-group"><label>Perspiration</label><input type="text" name="pg_perspiration" /></div>
+              <div class="form-group"><label>Thermal Reaction</label>
+                <select name="pg_thermal">
+                  <option value="">Select</option>
+                  <option>Chilly</option><option>Hot</option><option>Ambithermal</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Sleep</label><input type="text" name="pg_sleep" /></div>
+              <div class="form-group"><label>Dreams</label><input type="text" name="pg_dreams" /></div>
+              <div class="form-group"><label>Desires</label><input type="text" name="pg_desires" /></div>
+              <div class="form-group"><label>Aversion</label><input type="text" name="pg_aversion" /></div>
+              <div class="form-group"><label>Intolerance</label><input type="text" name="pg_intolerance" /></div>
+              <div class="form-group" style="grid-column: 1/-1"><label>Menstrual / Obstetric / Sexual History</label><textarea rows="2" name="pg_sexual"></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 8: Mental Generals -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-brain"></i> 8. Mental Generals</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group"><label>Reaction to Stress/Conflict</label><textarea rows="2" name="mg_stress"></textarea></div>
+              <div class="form-group"><label>Fears / Phobias</label><textarea rows="2" name="mg_fear"></textarea></div>
+              <div class="form-group"><label>Personality Type</label><textarea rows="2" name="mg_personality"></textarea></div>
+              <div class="form-group"><label>Hobbies & Interests</label><textarea rows="2" name="mg_hobbies"></textarea></div>
+              <div class="form-group"><label>Consolation Reaction</label><textarea rows="2" name="mg_consolation"></textarea></div>
+              <div class="form-group"><label>Relationships & Emotional Processing</label><textarea rows="2" name="mg_relationships"></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 9: Physical Characteristics -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-stethoscope"></i> 9. Physical Characteristics</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div style="margin-bottom: 20px; font-weight: 600; color: var(--accent);">Vitals</div>
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px;">
+              <div class="form-group"><label>Pulse (bpm)</label><input type="text" name="pc_pulse" /></div>
+              <div class="form-group"><label>BP (mmHg)</label><input type="text" name="pc_bp" /></div>
+              <div class="form-group"><label>Temperature</label><input type="text" name="pc_temp" /></div>
+              <div class="form-group"><label>Respiration (rpm)</label><input type="text" name="pc_resp" /></div>
+            </div>
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+              <div class="form-group"><label>Cyanosis</label><select name="pc_cyanosis"><option>Absent</option><option>Present</option></select></div>
+              <div class="form-group"><label>Anaemia / Pallor</label><select name="pc_anaemia"><option>Absent</option><option>Present</option></select></div>
+              <div class="form-group"><label>Jaundice / Icterus</label><select name="pc_jaundice"><option>Absent</option><option>Present</option></select></div>
+              <div class="form-group"><label>Oedema</label><select name="pc_oedema"><option>Absent</option><option>Present</option></select></div>
+              <div class="form-group"><label>Vertigo / Headache</label><input type="text" name="pc_headache" /></div>
+              <div class="form-group"><label>Vision / Hearing</label><input type="text" name="pc_senses" /></div>
+              <div class="form-group"><label>Skin</label><input type="text" name="pc_skin" /></div>
+              <div class="form-group"><label>Hair & Nails</label><input type="text" name="pc_hair" /></div>
+              <div class="form-group"><label>Character of Pain</label><input type="text" name="pc_pain" /></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 10: Central Nervous System -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-network-wired"></i> 10. Central Nervous System</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group"><label>Cranial Nerves</label><input type="text" name="cns_cranial" /></div>
+              <div class="form-group"><label>Power & Tone</label><input type="text" name="cns_power" /></div>
+              <div class="form-group"><label>Reflexes</label><input type="text" name="cns_reflexes" /></div>
+              <div class="form-group"><label>Coordination</label><input type="text" name="cns_coord" /></div>
+              <div class="form-group"><label>Involuntary Movements</label><input type="text" name="cns_movements" /></div>
+              <div class="form-group"><label>Bowel/Bladder Control</label><input type="text" name="cns_sphincter" /></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 11: Mental Status Exam -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-head-side-virus"></i> 11. Mental Status Examination</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group"><label>Appearance & Behaviour</label><input type="text" name="mse_appearance" /></div>
+              <div class="form-group"><label>Psychomotor Activity</label><input type="text" name="mse_activity" /></div>
+              <div class="form-group"><label>Speech</label><input type="text" name="mse_speech" /></div>
+              <div class="form-group"><label>Mood & Affect</label><input type="text" name="mse_mood" /></div>
+              <div class="form-group"><label>Thoughts / Hallucinations</label><input type="text" name="mse_thoughts" /></div>
+              <div class="form-group"><label>Orientation (Time/Place/Person)</label><input type="text" name="mse_orientation" /></div>
+              <div class="form-group"><label>Memory</label><input type="text" name="mse_memory" /></div>
+              <div class="form-group"><label>Insight & Judgement</label><input type="text" name="mse_insight" /></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 12: Analysis of Symptoms -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-scale-balanced"></i> 12. Analysis of Symptoms</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group">
+                <label>Symptoms of Patient</label>
+                <textarea name="analysis_patient" rows="6" placeholder="List patient's specific symptoms..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Symptoms of Disease</label>
+                <textarea name="analysis_disease" rows="6" placeholder="List textbook symptoms of the disease..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 13: Final Section -->
+        <div class="form-section-wrapper">
+          <div class="collapsible-header" onclick="toggleSection(this)">
+            <h3><i class="fa-solid fa-file-prescription"></i> 13. Final Section & Prescription</h3>
+            <i class="fa-solid fa-chevron-down collapsible-icon"></i>
+          </div>
+          <div class="collapsible-content">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group" style="grid-column: 1/-1"><label>Totality Considered</label><textarea name="fs_totality" rows="2"></textarea></div>
+              <div class="form-group"><label>Acute Remedies Considered</label><textarea name="fs_acute" rows="2"></textarea></div>
+              <div class="form-group"><label>Constitutional Remedies Considered</label><textarea name="fs_const" rows="2"></textarea></div>
+              <div class="form-group" style="grid-column: 1/-1"><label>Final Diagnosis & Investigations</label><textarea name="fs_diag" rows="2"></textarea></div>
+              <div class="form-group" style="grid-column: 1/-1">
+                <label>Prescription & Advice <span class="required">*</span></label>
+                <textarea name="fs_rx" rows="4" required style="border-color: var(--accent);"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Review Date</label>
+                <input type="date" name="fs_review" />
+              </div>
+              <div class="form-group">
+                <label>Doctor Signature (Name)</label>
+                <input type="text" name="fs_doctor" value="Dr. Priya S." />
+              </div>
+            </div>
+          </div>
+        </div>
+
       </form>
+    </main>
+
+    <!-- Sticky Footer Actions -->
+    <div class="sticky-footer">
+      <div style="flex: 1; display: flex; align-items: center; color: var(--muted); font-size: 14px;">
+        Auto-saving enabled.
+      </div>
+      <button type="button" class="btn btn-ghost" onclick="resetForm()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
+      <button type="button" class="btn btn-ghost" onclick="window.print()" style="color: var(--accent); border: 1px solid var(--accent);"><i class="fa-solid fa-print"></i> Print / PDF</button>
+      <button type="button" class="btn btn-primary" onclick="submitCaseSheet()"><i class="fa-solid fa-floppy-disk"></i> Save Case Sheet</button>
     </div>
 
-    <div class="footer-links">
-      Already registered? <a href="login.html">Clinic Staff Login</a>
-    </div>
   </div>
 
   <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
+  <script src="script.js"></script>
   <script>
-    // We point to the server address we created
-    const API_URL = "http://localhost:5000/api";
+    // Collapsible Logic
+    function toggleSection(element) {
+      const wrapper = element.parentElement;
+      wrapper.classList.toggle('expanded');
+    }
 
-    document.getElementById('publicRegForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const submitBtn = this.querySelector('button[type="submit"]');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = "Submitting...";
-
-      // 1. Collect what the patient typed
-      const patientData = {
-        id: "REG-" + Date.now().toString().slice(-4), // Create a simple temporary ID
-        name: this.querySelector('input[type="text"]').value,
-        age: this.querySelector('input[type="number"]').value,
-        gender: this.querySelector('select').value,
-        phone: this.querySelector('input[type="tel"]').value,
-        address: this.querySelector('textarea').value,
-        complaints: this.querySelectorAll('textarea')[1].value
-      };
-
-      try {
-        // 2. Send it to the server's "Pantry" (Database)
-        const response = await fetch(`${API_URL}/patients`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(patientData)
-        });
-
-        if (response.ok) {
-          showToast("Registration successful! Thank you.");
-          this.reset();
+    // Dynamic Table Row Add/Remove
+    function addRow(tableId) {
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      const templateRow = tbody.querySelector('tr').cloneNode(true);
+      // Clear inputs in cloned row
+      templateRow.querySelectorAll('input, select').forEach(input => {
+        if (input.tagName === 'SELECT') {
+          input.selectedIndex = 0;
         } else {
-          showToast("Something went wrong. Please try again.", "error");
+          input.value = '';
         }
-      } catch (err) {
-        showToast("Cannot connect to clinic server.", "error");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = "Submit Registration";
+      });
+      tbody.appendChild(templateRow);
+    }
+
+    function removeRow(btn) {
+      const tbody = btn.closest('tbody');
+      if (tbody.children.length > 1) {
+        btn.closest('tr').remove();
+        saveDraft(); // trigger save
+      } else {
+        showToast("Cannot remove the last row.", "error");
       }
+    }
+
+    // Auto-Save Logic
+    const DRAFT_KEY = 'homeo_case_sheet_draft';
+    const form = document.getElementById('caseSheetForm');
+    
+    function saveDraft() {
+      const formData = new FormData(form);
+      const data = {};
+      
+      // Handle dynamic arrays (table rows)
+      for (let [key, value] of formData.entries()) {
+        if (key.endsWith('[]')) {
+          if (!data[key]) data[key] = [];
+          data[key].push(value);
+        } else {
+          data[key] = value;
+        }
+      }
+      
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+      
+      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      document.getElementById('saveStatus').innerText = 'Draft saved at ' + time;
+    }
+
+    function restoreDraft() {
+      const draft = localStorage.getItem(DRAFT_KEY);
+      if (draft) {
+        try {
+          const data = JSON.parse(draft);
+          
+          // Rebuild tables if necessary based on array lengths
+          const arrayKeys = Object.keys(data).filter(k => k.endsWith('[]'));
+          // Get max length for each table to clone rows
+          const tableMap = {
+            'pm_condition[]': 'pastMedicalTable',
+            'sub_name[]': 'substanceTable',
+            'fam_rel[]': 'familyTable'
+          };
+          
+          Object.keys(tableMap).forEach(key => {
+            if (data[key] && Array.isArray(data[key])) {
+              const rowsNeeded = data[key].length;
+              const tableId = tableMap[key];
+              const tbody = document.querySelector(`#${tableId} tbody`);
+              while (tbody.children.length < rowsNeeded) {
+                addRow(tableId);
+              }
+            }
+          });
+
+          // Populate fields
+          for (let key in data) {
+            if (key.endsWith('[]')) {
+              const inputs = form.querySelectorAll(`[name="${key}"]`);
+              data[key].forEach((val, i) => {
+                if (inputs[i]) inputs[i].value = val;
+              });
+            } else {
+              const input = form.querySelector(`[name="${key}"]`);
+              if (input) input.value = data[key];
+            }
+          }
+          document.getElementById('saveStatus').innerText = 'Draft restored.';
+        } catch (e) {
+          console.error("Failed to restore draft", e);
+        }
+      }
+      
+      // Set today's date if empty
+      if (!document.getElementById('regDate').value) {
+        document.getElementById('regDate').valueAsDate = new Date();
+      }
+    }
+
+    // Event Listeners for Auto-Save
+    form.addEventListener('input', () => {
+      // Debounce saving slightly
+      clearTimeout(form.saveTimeout);
+      form.saveTimeout = setTimeout(saveDraft, 1000);
     });
 
-    // Simple toast function for this page
+    form.addEventListener('change', saveDraft);
+
+    // Initial Load
+    document.addEventListener('DOMContentLoaded', restoreDraft);
+
+    // Form Actions
+    function resetForm() {
+      if(confirm('Are you sure you want to clear the entire case sheet? This cannot be undone.')) {
+        form.reset();
+        localStorage.removeItem(DRAFT_KEY);
+        // Reset tables to 1 row
+        ['pastMedicalTable', 'substanceTable', 'familyTable'].forEach(id => {
+          const tbody = document.querySelector(`#${id} tbody`);
+          while (tbody.children.length > 1) tbody.lastElementChild.remove();
+        });
+        document.getElementById('saveStatus').innerText = 'Form cleared.';
+        document.getElementById('regDate').valueAsDate = new Date();
+      }
+    }
+
+    function submitCaseSheet() {
+      if (form.checkValidity()) {
+        showToast("Case Sheet Saved successfully!");
+        localStorage.removeItem(DRAFT_KEY); // clear draft on success
+        setTimeout(() => {
+          window.location.href = 'patients.html';
+        }, 1500);
+      } else {
+        form.reportValidity();
+        showToast("Please fill in all mandatory fields.", "error");
+      }
+    }
+
+    // Override script.js showToast if needed for this page
     function showToast(msg, type = "success") {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
