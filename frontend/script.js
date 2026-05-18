@@ -1342,6 +1342,19 @@ function applyAvailableDoctorsToDropdowns() {
       select.appendChild(defaultOpt);
     }
     
+    // Add default referrer options if it is the referredBy dropdown
+    if (select.id === "referredBy") {
+      const selfOpt = document.createElement("option");
+      selfOpt.value = "Self / Walk-in";
+      selfOpt.textContent = "Self / Walk-in";
+      select.appendChild(selfOpt);
+      
+      const webOpt = document.createElement("option");
+      webOpt.value = "Website / Social Media";
+      webOpt.textContent = "Website / Social Media";
+      select.appendChild(webOpt);
+    }
+    
     AVAILABLE_DOCTORS.forEach(docName => {
       const opt = document.createElement("option");
       opt.value = docName;
@@ -1349,9 +1362,13 @@ function applyAvailableDoctorsToDropdowns() {
       select.appendChild(opt);
     });
     
-    // Restore value if still in list, or set primary doctor as fallback
-    if (currentVal && AVAILABLE_DOCTORS.includes(currentVal)) {
-      select.value = currentVal;
+    // Restore value if still in list, or set default referrers / primary doctor as fallback
+    if (currentVal) {
+      // Find matching option to restore
+      const hasOpt = Array.from(select.options).some(opt => opt.value === currentVal);
+      if (hasOpt) {
+        select.value = currentVal;
+      }
     } else if (select.name === "fs_doctor") {
       select.value = localStorage.getItem("doctor-name") || AVAILABLE_DOCTORS[0] || "Dr. Priya S.";
     }
