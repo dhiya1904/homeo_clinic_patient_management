@@ -68,7 +68,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .logo { display: flex; align-items: center; gap: 10px; overflow: hidden; white-space: nowrap; }
 .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #818cf8); border-radius: 10px; display: grid; place-items: center; color: #fff; font-size: 16px; flex-shrink: 0; }
 .logo-text { color: #fff; font-weight: 700; font-size: 15px; letter-spacing: .3px; }
-.sidebar.collapsed .logo-text { display: none; }
+.sidebar.collapsed .logo { display: none; }
+.sidebar.collapsed .sidebar-header { justify-content: center; padding: 20px 8px; }
 .sidebar-toggle { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 18px; padding: 4px; border-radius: 6px; flex-shrink: 0; transition: color var(--transition); }
 .sidebar-toggle:hover { color: #fff; }
 
@@ -482,9 +483,9 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 
 /* ===== PRINT STYLES ===== */
 @media print {
-  body * { visibility: hidden; }
-  #invoice-print-area, #invoice-print-area * { visibility: visible; }
-  #invoice-print-area { 
+  body.printing-invoice * { visibility: hidden; }
+  body.printing-invoice #invoice-print-area, body.printing-invoice #invoice-print-area * { visibility: visible; }
+  body.printing-invoice #invoice-print-area { 
     position: absolute; 
     left: 0; 
     top: 0; 

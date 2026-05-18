@@ -189,9 +189,9 @@ function renderAppointments(filter = "all") {
         </select>
       </td>
       <td>
-        <button class="tbl-action" title="View" aria-label="View ${a.name}"><i class="fa-solid fa-eye"></i></button>
-        <button class="tbl-action" title="Edit" aria-label="Edit ${a.name}"><i class="fa-solid fa-pen-to-square"></i></button>
-        <button class="tbl-action" title="Delete" aria-label="Delete ${a.name}" style="color:#ef4444"><i class="fa-solid fa-trash"></i></button>
+        <button class="tbl-action btn-view-apt" title="View" aria-label="View ${a.name}" data-id="${a.id}"><i class="fa-solid fa-eye"></i></button>
+        <button class="tbl-action btn-edit-apt" title="Edit" aria-label="Edit ${a.name}" data-id="${a.id}"><i class="fa-solid fa-pen-to-square"></i></button>
+        <button class="tbl-action btn-delete-apt" title="Delete" aria-label="Delete ${a.name}" data-id="${a.id}" style="color:#ef4444"><i class="fa-solid fa-trash"></i></button>
       </td>
     </tr>`).join("");
 }
@@ -323,7 +323,7 @@ function renderFollowups() {
 function renderMedicines() {
   const tbody = document.getElementById("medicinesBody");
   if (!tbody) return;
-  tbody.innerHTML = MEDICINE_DATA.map(m => `
+  tbody.innerHTML = MEDICINE_DATA.map((m, i) => `
     <tr>
       <td><strong>${m.patient}</strong></td>
       <td><span class="badge" style="background:rgba(96, 165, 250, 0.1);color:var(--accent);border:1px solid rgba(96, 165, 250, 0.2)">${m.medicine}</span></td>
@@ -332,8 +332,8 @@ function renderMedicines() {
       <td><span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--muted)">${m.start}</span></td>
       <td><span class="badge badge-${m.status === 'Running' ? 'confirmed' : 'completed'}">${m.status}</span></td>
       <td>
-        <button class="tbl-action" title="Edit Prescription"><i class="fa-solid fa-prescription"></i></button>
-        <button class="tbl-action" title="Update Status"><i class="fa-solid fa-arrows-rotate"></i></button>
+        <button class="tbl-action btn-edit-presc" title="Edit Prescription" data-index="${i}"><i class="fa-solid fa-prescription"></i></button>
+        <button class="tbl-action btn-toggle-presc" title="Update Status" data-index="${i}"><i class="fa-solid fa-arrows-rotate"></i></button>
       </td>
     </tr>`).join("");
 }
@@ -684,25 +684,34 @@ function initModal() {
 }
 
 // ── PRESCRIPTION MODAL ─────────────────────────────────────────
+let editingPrescIndex = -1;
+
 function initPrescriptionModal() {
   const overlay = document.getElementById("prescriptionModalOverlay");
   const form = document.getElementById("prescriptionForm");
   const openBtn = document.getElementById("addPrescriptionBtn");
+  const titleEl = document.getElementById("prescModalTitle");
   if (!overlay || !form || !openBtn) return;
 
   const closeBtns = [document.getElementById("prescModalClose"), document.getElementById("cancelPrescModal")];
 
   openBtn.addEventListener("click", () => {
+    editingPrescIndex = -1;
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-prescription"></i> New Prescription';
     overlay.hidden = false;
   });
 
-  closeBtns.forEach(btn => btn && btn.addEventListener("click", () => {
+  const closeModal = () => {
     overlay.hidden = true;
     form.reset();
-  }));
+    editingPrescIndex = -1;
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-prescription"></i> New Prescription';
+  };
+
+  closeBtns.forEach(btn => btn && btn.addEventListener("click", closeModal));
 
   overlay.addEventListener("click", e => {
-    if (e.target === overlay) { overlay.hidden = true; form.reset(); }
+    if (e.target === overlay) { closeModal(); }
   });
 
   form.addEventListener("submit", e => {
@@ -717,14 +726,57 @@ function initPrescriptionModal() {
       return;
     }
 
-    const start = new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
-    MEDICINE_DATA.unshift({ patient, medicine, dosage, frequency, status: "Running", start });
+    if (editingPrescIndex > -1) {
+      // Edit mode
+      MEDICINE_DATA[editingPrescIndex] = {
+        ...MEDICINE_DATA[editingPrescIndex],
+        patient,
+        medicine,
+        dosage,
+        frequency
+      };
+      showToast(`Prescription for ${patient} updated!`);
+    } else {
+      // Create mode
+      const start = new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+      MEDICINE_DATA.unshift({ patient, medicine, dosage, frequency, status: "Running", start });
+      showToast(`Prescription for ${patient} saved!`);
+    }
     
     renderMedicines();
-    overlay.hidden = true;
-    form.reset();
-    showToast(`Prescription for ${patient} saved!`);
+    closeModal();
   });
+
+  // Action buttons click handlers on prescription table
+  const tbody = document.getElementById("medicinesBody");
+  if (tbody) {
+    tbody.addEventListener("click", e => {
+      const btn = e.target.closest(".tbl-action");
+      if (!btn) return;
+
+      const idx = parseInt(btn.dataset.index, 10);
+      if (isNaN(idx) || !MEDICINE_DATA[idx]) return;
+
+      if (btn.classList.contains("btn-edit-presc")) {
+        editingPrescIndex = idx;
+        const m = MEDICINE_DATA[idx];
+        
+        // Prefill form
+        document.getElementById("prescPatient").value = m.patient;
+        document.getElementById("prescMedicine").value = m.medicine;
+        document.getElementById("prescDosage").value = m.dosage;
+        document.getElementById("prescFreq").value = m.frequency;
+
+        if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-prescription"></i> Edit Prescription';
+        overlay.hidden = false;
+      } else if (btn.classList.contains("btn-toggle-presc")) {
+        const m = MEDICINE_DATA[idx];
+        m.status = m.status === "Running" ? "Completed" : "Running";
+        showToast(`Status updated to: ${m.status}`);
+        renderMedicines();
+      }
+    });
+  }
 }
 
 // ── FILTER ────────────────────────────────────────────────────
@@ -740,6 +792,8 @@ function initFilter() {
 function initTableActions() {
   const body = document.getElementById("appointmentsBody");
   if (!body) return;
+  
+  // Status change listener
   body.addEventListener("change", e => {
     if (e.target.classList.contains("status-select")) {
       const id = parseInt(e.target.dataset.id, 10);
@@ -751,6 +805,35 @@ function initTableActions() {
         showToast(`Appointment status updated to ${newStatus}`);
         renderAptStatusChart();
       }
+    }
+  });
+
+  // Action button click listener
+  body.addEventListener("click", e => {
+    const btn = e.target.closest(".tbl-action");
+    if (!btn) return;
+    
+    const id = parseInt(btn.dataset.id, 10);
+    if (isNaN(id)) return;
+    
+    if (btn.classList.contains("btn-view-apt")) {
+      const apt = APPOINTMENTS.find(a => a.id === id);
+      if (apt) {
+        showAptDetailsModal(`${apt.name}'s Appointment`, [apt]);
+      }
+    } else if (btn.classList.contains("btn-delete-apt")) {
+      const aptIndex = APPOINTMENTS.findIndex(a => a.id === id);
+      if (aptIndex > -1) {
+        const apt = APPOINTMENTS[aptIndex];
+        if (confirm(`Are you sure you want to delete ${apt.name}'s appointment?`)) {
+          APPOINTMENTS.splice(aptIndex, 1);
+          showToast(`Appointment for ${apt.name} deleted.`);
+          renderAppointments(document.getElementById("aptFilter")?.value || "all");
+          if (typeof renderAptStatusChart === "function") renderAptStatusChart();
+        }
+      }
+    } else if (btn.classList.contains("btn-edit-apt")) {
+      showToast("Appointment editing is not available in demo mode.");
     }
   });
 }
@@ -1042,9 +1125,106 @@ function renderReportTable() {
 function initReportsPage() {
   if (!document.getElementById("reports-page-container")) return;
   renderReportTable();
-  // We can reuse the existing renderChart if we have a chart container
-  if (document.getElementById("reportsChartArea")) {
-     // Custom logic for report specific charts can go here
+  
+  const downloadBtn = document.getElementById("downloadRevenuePdfBtn");
+  if (downloadBtn) {
+    downloadBtn.addEventListener("click", () => {
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        showToast("Popup blocked! Please allow popups to download reports.", "error");
+        return;
+      }
+      
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Jireh Homeopathy - Revenue Report 2026</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+            <style>
+              body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; background: white; }
+              .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #60a5fa; padding-bottom: 20px; margin-bottom: 30px; }
+              .clinic-info h1 { margin: 0; font-size: 24px; color: #1e3a8a; }
+              .clinic-info p { margin: 4px 0 0 0; color: #64748b; font-size: 14px; }
+              .report-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+              .stats-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+              .stat-box { border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #f8fafc; }
+              .stat-box .val { font-size: 20px; font-weight: 700; color: #1e293b; margin-top: 4px; }
+              .stat-box .lbl { font-size: 12px; color: #64748b; font-weight: 600; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+              th { background: #f1f5f9; color: #475569; font-weight: 600; }
+              tr:hover { background: #f8fafc; }
+              .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="clinic-info">
+                <h1>Jireh Homeopathy Clinic</h1>
+                <p>Super Speciality Homeopathy Care & Management</p>
+              </div>
+              <div style="text-align: right">
+                <p style="font-weight: 600; margin: 0">Dr. Priya S. (Admin)</p>
+                <p style="color: #64748b; margin: 4px 0 0 0; font-size: 12px;">Generated: ${new Date().toLocaleDateString()}</p>
+              </div>
+            </div>
+            
+            <div class="report-title">Annual Revenue & Performance Report (2026)</div>
+            
+            <div class="stats-summary">
+              <div class="stat-box">
+                <div class="lbl">TOTAL REVENUE (MAY)</div>
+                <div class="val">₹84,500.00</div>
+              </div>
+              <div class="stat-box">
+                <div class="lbl">TOTAL APPOINTMENTS</div>
+                <div class="val">210</div>
+              </div>
+              <div class="stat-box">
+                <div class="lbl">GROWTH RATE</div>
+                <div class="val">+18.4%</div>
+              </div>
+            </div>
+
+            <h3>Monthly Revenue breakdown</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Revenue</th>
+                  <th>Patients</th>
+                  <th>Appointments</th>
+                  <th>Growth</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${REPORT_DATA.map(r => `
+                  <tr>
+                    <td><strong>${r.month} 2026</strong></td>
+                    <td style="color:#2563eb; font-weight:700">₹${r.revenue.toLocaleString('en-IN')}</td>
+                    <td>${r.patients}</td>
+                    <td>${r.appts}</td>
+                    <td style="color:#16a34a; font-weight:600">+${Math.floor(Math.random() * 15 + 5)}%</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+
+            <div class="footer">
+              This is a computer-generated performance report from the Jireh Homeopathy CRM system.
+            </div>
+            
+            <script>
+              window.onload = function() {
+                window.print();
+                setTimeout(function() { window.close(); }, 500);
+              }
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    });
   }
 }
 
@@ -1226,8 +1406,10 @@ async function printInvoice() {
       printBody.innerHTML += row;
     }
   });
-
+  
+  document.body.classList.add("printing-invoice");
   window.print();
+  document.body.classList.remove("printing-invoice");
 }
 
 // ── CALENDAR LOGIC ──────────────────────────────────────────
@@ -1317,20 +1499,176 @@ function renderCalendar() {
     dayBox.innerHTML = `<span class="calendar-date">${d}</span>`;
     
     // Check for appointments (Mock Data Mapping)
-    if (month === 4 && d === 13) {
-       dayBox.classList.add("has-apt");
-       dayBox.innerHTML += `
-         <div class="apt-pill"><i class="fa-solid fa-user-check"></i> 6 Appts</div>
-         <div class="apt-pill pending" style="margin-top:4px"><i class="fa-solid fa-clock"></i> 2 Pending</div>
-       `;
-    } else if (month === 4 && (d === 15 || d === 20)) {
-       dayBox.classList.add("has-apt");
-       dayBox.innerHTML += `<div class="apt-pill"><i class="fa-solid fa-user-check"></i> 3 Confirmed</div>`;
+    let dayApts = [];
+    if (month === 4) {
+      if (d === 13) {
+        dayBox.classList.add("has-apt");
+        dayBox.innerHTML += `
+          <div class="apt-pill"><i class="fa-solid fa-user-check"></i> 6 Appts</div>
+          <div class="apt-pill pending" style="margin-top:4px"><i class="fa-solid fa-clock"></i> 2 Pending</div>
+        `;
+        dayApts = [
+          { name: "Meera Nair", time: "09:30 AM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" },
+          { name: "Rahul Sharma", time: "10:15 AM", doctor: "Dr. Priya S.", type: "New Consultation", status: "Confirmed" },
+          { name: "Kiran Patel", time: "11:00 AM", doctor: "Dr. Arjun K.", type: "Follow-up", status: "Pending" },
+          { name: "Aditi Rao", time: "11:45 AM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" },
+          { name: "Suresh Menon", time: "02:15 PM", doctor: "Dr. Arjun K.", type: "Emergency", status: "Pending" },
+          { name: "Divya Nair", time: "03:00 PM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" }
+        ];
+      } else if (d === 15) {
+        dayBox.classList.add("has-apt");
+        dayBox.innerHTML += `<div class="apt-pill"><i class="fa-solid fa-user-check"></i> 3 Confirmed</div>`;
+        dayApts = [
+          { name: "Amit Verma", time: "10:00 AM", doctor: "Dr. Arjun K.", type: "Follow-up", status: "Confirmed" },
+          { name: "Sneha Reddy", time: "11:30 AM", doctor: "Dr. Priya S.", type: "New Consultation", status: "Confirmed" },
+          { name: "Vikram Sen", time: "04:15 PM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" }
+        ];
+      } else if (d === 20) {
+        dayBox.classList.add("has-apt");
+        dayBox.innerHTML += `<div class="apt-pill"><i class="fa-solid fa-user-check"></i> 3 Confirmed</div>`;
+        dayApts = [
+          { name: "John Doe", time: "09:00 AM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" },
+          { name: "Jane Smith", time: "12:00 PM", doctor: "Dr. Arjun K.", type: "Follow-up", status: "Confirmed" },
+          { name: "Rajesh Kumar", time: "03:30 PM", doctor: "Dr. Priya S.", type: "New Consultation", status: "Confirmed" }
+        ];
+      }
     }
 
-    dayBox.onclick = () => showToast(`Schedule for ${monthLabel.textContent.split(' ')[0]} ${d} opened.`);
+    // Hover tooltip event listener
+    if (dayApts.length > 0) {
+      dayBox.addEventListener("mouseenter", (e) => {
+        let tooltip = document.getElementById("calendar-tooltip");
+        if (!tooltip) {
+          tooltip = document.createElement("div");
+          tooltip.id = "calendar-tooltip";
+          tooltip.style.position = "absolute";
+          tooltip.style.background = "var(--sidebar-bg, #000)";
+          tooltip.style.border = "1px solid var(--border)";
+          tooltip.style.padding = "14px";
+          tooltip.style.borderRadius = "12px";
+          tooltip.style.boxShadow = "0 10px 30px rgba(0,0,0,0.6)";
+          tooltip.style.zIndex = "2500";
+          tooltip.style.pointerEvents = "none";
+          tooltip.style.fontSize = "12px";
+          tooltip.style.color = "var(--text)";
+          tooltip.style.minWidth = "240px";
+          tooltip.style.transition = "opacity 0.2s ease";
+          document.body.appendChild(tooltip);
+        }
+        
+        let html = `<div style="font-weight:700; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; color:var(--accent); display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-calendar-check"></i> May ${d} Schedule</div>`;
+        dayApts.forEach(a => {
+          const statusColor = a.status === "Confirmed" ? "var(--accent)" : "var(--amber)";
+          html += `
+            <div style="margin-bottom:8px; display:flex; flex-direction:column; gap:2px; line-height:1.4;">
+              <div style="display:flex; justify-content:space-between; font-weight:600; color:var(--text);">
+                <span>${a.name}</span>
+                <span style="color:var(--accent); font-weight:500;">${a.time}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--muted);">
+                <span>${a.doctor} • ${a.type}</span>
+                <span style="color:${statusColor}; font-weight:700;">${a.status}</span>
+              </div>
+            </div>
+          `;
+        });
+        
+        tooltip.innerHTML = html;
+        
+        const rect = dayBox.getBoundingClientRect();
+        tooltip.style.left = `${rect.left + window.scrollX + 15}px`;
+        tooltip.style.top = `${rect.bottom + window.scrollY + 8}px`;
+        tooltip.style.opacity = "1";
+        tooltip.style.display = "block";
+      });
+      
+      dayBox.addEventListener("mouseleave", () => {
+        const tooltip = document.getElementById("calendar-tooltip");
+        if (tooltip) tooltip.style.display = "none";
+      });
+    }
+
+    dayBox.onclick = () => {
+      const monthName = monthLabel.textContent.split(' ')[0];
+      showAptDetailsModal(`${monthName} ${d}, ${year}`, dayApts);
+    };
     grid.appendChild(dayBox);
   }
+}
+
+// ── APPOINTMENT DETAILS MODAL ────────────────────────────────
+function showAptDetailsModal(dateLabel, apts) {
+  let modal = document.getElementById("apt-details-modal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "apt-details-modal";
+    modal.className = "modal-overlay";
+    modal.style.position = "fixed";
+    modal.style.top = "0";
+    modal.style.left = "0";
+    modal.style.width = "100%";
+    modal.style.height = "100%";
+    modal.style.background = "rgba(0,0,0,0.6)";
+    modal.style.display = "flex";
+    modal.style.alignItems = "center";
+    modal.style.justifyContent = "center";
+    modal.style.zIndex = "3000";
+    modal.style.backdropFilter = "blur(4px)";
+    
+    modal.innerHTML = `
+      <div class="modal" style="width: 100%; max-width: 650px; max-height: 85vh; display: flex; flex-direction: column; animation: slideUp 0.3s ease; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4)">
+        <div class="modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+          <h2 id="aptModalTitle" style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text)"><i class="fa-solid fa-calendar-check" style="color:var(--accent); margin-right:8px"></i> Appointments</h2>
+          <button class="modal-close" onclick="document.getElementById('apt-details-modal').style.display='none'" style="background: none; border: none; font-size: 24px; color: var(--muted); cursor: pointer;">&times;</button>
+        </div>
+        <div style="padding: 24px; overflow-y: auto; flex: 1;" id="aptModalContent">
+          <!-- Table goes here -->
+        </div>
+        <div class="form-actions" style="border-top: 1px solid var(--border); padding: 16px 24px; display: flex; justify-content: flex-end; background: rgba(0,0,0,0.05)">
+          <button type="button" class="btn btn-ghost" onclick="document.getElementById('apt-details-modal').style.display='none'" style="border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--text); background: none;">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+  
+  document.getElementById("aptModalTitle").innerHTML = `<i class="fa-solid fa-calendar-check" style="color:var(--accent); margin-right:8px"></i> Schedule for ${dateLabel}`;
+  
+  let html = `
+    <div class="table-wrapper" style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+    <table class="data-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="background: rgba(255,255,255,0.02)">
+          <th style="padding: 12px 16px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border)">Time</th>
+          <th style="padding: 12px 16px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border)">Patient Name</th>
+          <th style="padding: 12px 16px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border)">Doctor</th>
+          <th style="padding: 12px 16px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border)">Type</th>
+          <th style="padding: 12px 16px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border)">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  if (apts.length === 0) {
+    html += `<tr><td colspan="5" style="text-align: center; padding: 32px; color: var(--muted); font-size: 14px;"><i class="fa-solid fa-calendar-xmark" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>No appointments scheduled for this day.</td></tr>`;
+  } else {
+    apts.forEach(a => {
+      const statusClass = a.status === "Confirmed" ? "status-paid" : "status-pending";
+      html += `
+        <tr style="border-bottom: 1px solid var(--border)">
+          <td style="padding: 14px 16px; font-weight: 600; color: var(--accent);">${a.time}</td>
+          <td style="padding: 14px 16px; font-weight: 700; color: var(--text);">${a.name}</td>
+          <td style="padding: 14px 16px; color: var(--text);">${a.doctor}</td>
+          <td style="padding: 14px 16px;"><span class="badge" style="background: var(--sidebar-hover); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; color: var(--muted);">${a.type}</span></td>
+          <td style="padding: 14px 16px;"><span class="status-indicator ${statusClass}" style="padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block;">${a.status}</span></td>
+        </tr>
+      `;
+    });
+  }
+  
+  html += `</tbody></table></div>`;
+  document.getElementById("aptModalContent").innerHTML = html;
+  modal.style.display = "flex";
 }
 
 const API_URL = "/api";
