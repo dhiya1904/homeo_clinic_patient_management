@@ -501,54 +501,120 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 
 
 /* ===== CASE SHEET SPECIFIC STYLES ===== */
+.form-section-wrapper {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  margin-bottom: 24px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden;
+}
+
 .collapsible-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  background-color: var(--bg);
-  border-bottom: 1px solid var(--border);
+  padding: 14px 20px !important;
+  background-color: #f8fafc !important;
+  border-bottom: 2px solid #0f172a !important;
   cursor: pointer;
-  border-radius: 12px 12px 0 0;
+  border-radius: 8px 8px 0 0;
   transition: background-color 0.2s ease;
 }
+
 .collapsible-header:hover {
-  background-color: #f1f5f9;
+  background-color: #f1f5f9 !important;
 }
+
 .collapsible-header h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--accent);
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
   margin: 0;
   display: flex;
   align-items: center;
   gap: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
+
 .collapsible-icon {
   transition: transform 0.3s ease;
-  color: var(--muted);
+  color: #0f172a !important;
+  transform: rotate(180deg); /* Icon reflects open state */
 }
-.form-section-wrapper {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  margin-bottom: 24px;
-  background: var(--card);
-  overflow: hidden;
-}
+
+/* Force all form sections to be fully expanded/open by default like the official clinical PDF record! */
 .collapsible-content {
-  padding: 24px;
-  display: none;
+  padding: 24px !important;
+  display: block !important; /* Always open to look like a complete clinical folder! */
 }
-.form-section-wrapper.expanded .collapsible-content {
+
+/* Premium Medical Case Sheet Input & Field Styles */
+.patient-form .form-group label {
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  color: #475569 !important;
+  margin-bottom: 6px;
   display: block;
-  animation: slideDown 0.3s ease-out forwards;
 }
-.form-section-wrapper.expanded .collapsible-icon {
-  transform: rotate(180deg);
+
+.patient-form input[type="text"],
+.patient-form input[type="number"],
+.patient-form input[type="tel"],
+.patient-form input[type="date"],
+.patient-form select,
+.patient-form textarea {
+  border: 1px solid #94a3b8 !important;
+  border-radius: 4px !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  background-color: #fdfdfd !important;
+  color: #0f172a !important;
+  transition: all 0.2s ease;
 }
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+
+.patient-form input:focus,
+.patient-form select:focus,
+.patient-form textarea:focus {
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1) !important;
+  background-color: #ffffff !important;
+}
+
+/* Crisp Clinical Table styles */
+.patient-form .table-responsive {
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.patient-form table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.patient-form table th {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  border-bottom: 2px solid #0f172a !important;
+  padding: 10px 12px !important;
+}
+
+.patient-form table td {
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 8px 10px !important;
+}
+
+.patient-form table td input,
+.patient-form table td select {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
 }
 
 .sticky-footer {
