@@ -629,6 +629,12 @@
     const form = document.getElementById('caseSheetForm');
     
     function saveDraft() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('id')) {
+        document.getElementById('saveStatus').innerText = 'Viewing existing patient Case Sheet';
+        return;
+      }
+
       const formData = new FormData(form);
       const data = {};
       
@@ -646,6 +652,182 @@
       
       const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
       document.getElementById('saveStatus').innerText = 'Draft saved at ' + time;
+    }
+
+    function loadPatientCaseSheet(id) {
+      // Find patient in PATIENTS
+      const p = PATIENTS.find(pat => pat.id === id);
+      if (!p) return;
+
+      // Update page title
+      document.querySelector('#pageTitle').innerText = `${p.name}'s Case Sheet`;
+      document.querySelector('.breadcrumb strong').innerText = p.name;
+      
+      // Populate fields
+      document.getElementById('regNo').value = p.id;
+      document.getElementById('regDate').value = "2026-05-01";
+      document.getElementById('referredBy').value = "Dr. Priya S.";
+      document.getElementById('fullName').value = p.name;
+      document.getElementById('gender').value = p.tag === "new" ? "Female" : "Male";
+      document.getElementById('age').value = p.age;
+      document.getElementById('dob').value = "1992-04-12";
+      document.getElementById('maritalStatus').value = "Married";
+      document.getElementById('occupation').value = "Teacher";
+      document.getElementById('religion').value = "Hindu";
+      document.getElementById('dietType').value = "Vegetarian";
+      document.getElementById('phone').value = "+91 98456 12345";
+      document.getElementById('address').value = "Greenwood Apartments, Flat 4B, MG Road, Bangalore";
+      document.getElementById('provisionalDiag').value = p.condition;
+      document.getElementById('finalDiag').value = p.condition;
+
+      // Section 2: Complaints
+      document.getElementById('complaints').value = `Patient reports severe ${p.condition.toLowerCase()} symptoms starting 6 months ago. Worsened by stress and cold weather.`;
+      document.getElementById('hpi').value = "The symptoms began gradually. High severity in mornings. Associated with minor head/body aches.";
+      document.getElementById('onsetType').value = "Gradual";
+      document.getElementById('duration').value = "6 Months";
+      document.getElementById('precipitating').value = "Stress, lack of sleep";
+
+      // Section 3: Past Medical (Prepopulate mock row)
+      const pmTable = document.querySelector('#pastMedicalTable tbody');
+      pmTable.innerHTML = `
+        <tr>
+          <td><input type="text" name="pm_condition[]" value="Hypertension" /></td>
+          <td><input type="text" name="pm_age[]" value="30" /></td>
+          <td><input type="text" name="pm_duration[]" value="2 years" /></td>
+          <td><input type="text" name="pm_recovery[]" value="Controlled" /></td>
+          <td><input type="text" name="pm_meds[]" value="Amlodipine" /></td>
+          <td><input type="text" name="pm_adverse[]" value="None" /></td>
+          <td><button type="button" class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>
+      `;
+
+      // Section 4: Substance Use
+      const subTable = document.querySelector('#substanceTable tbody');
+      subTable.innerHTML = `
+        <tr>
+          <td>
+            <select name="sub_name[]">
+              <option selected>Tea/Coffee</option>
+              <option>Alcohol</option>
+              <option>Nicotine / Smoking</option>
+            </select>
+          </td>
+          <td><input type="text" name="sub_amt[]" value="2 cups/day" /></td>
+          <td><input type="number" name="sub_age[]" value="18" /></td>
+          <td>
+            <select name="sub_cont[]">
+              <option selected>Yes</option><option>No</option>
+            </select>
+          </td>
+          <td><input type="text" name="sub_last[]" value="Today morning" /></td>
+          <td><input type="text" name="sub_withdraw[]" value="Headache if delayed" /></td>
+          <td><button type="button" class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>
+      `;
+
+      // Section 5: Family History
+      const famTable = document.querySelector('#familyTable tbody');
+      famTable.innerHTML = `
+        <tr>
+          <td><input type="text" name="fam_rel[]" value="Mother" /></td>
+          <td>
+            <select name="fam_status[]">
+              <option selected>Alive</option><option>Deceased</option>
+            </select>
+          </td>
+          <td><input type="number" name="fam_age[]" value="58" /></td>
+          <td><input type="text" name="fam_illness[]" value="Diabetes, Thyroid" /></td>
+          <td><input type="text" name="fam_death[]" value="" /></td>
+          <td><button type="button" class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>
+      `;
+
+      // Section 6: Personal History
+      form.querySelector('[name="ph_birth"]').value = "Full term, normal vaginal delivery. No neonatal complications.";
+      form.querySelector('[name="ph_dev"]').value = "Achieved milestones at appropriate ages.";
+      form.querySelector('[name="ph_vaccine"]').value = "Fully vaccinated as per pediatric schedule.";
+      form.querySelector('[name="ph_bites"]').value = "No history of animal bites.";
+      form.querySelector('[name="ph_edu"]').value = "Graduate in Education.";
+      form.querySelector('[name="ph_occ"]').value = "Works as a Primary School Teacher.";
+      form.querySelector('[name="ph_marital"]').value = "Happily married. Positive spousal relationship.";
+      form.querySelector('[name="ph_religion"]').value = "Regular visitor to temple, spiritual inclination.";
+
+      // Section 7: Physical Generals
+      form.querySelector('[name="pg_appetite"]').value = "Good, regular meals.";
+      form.querySelector('[name="pg_thirst"]').value = "Moderate, drinks about 2L water daily.";
+      form.querySelector('[name="pg_bowels"]').value = "Regular, once daily, soft stool.";
+      form.querySelector('[name="pg_bladder"]').value = "Clear, 4-5 times a day, no pain.";
+      form.querySelector('[name="pg_perspiration"]').value = "Profuse on forehead and palms during stress.";
+      form.querySelector('[name="pg_thermal"]').value = "Chilly";
+      form.querySelector('[name="pg_sleep"]').value = "Sound, 6-7 hours. Feels refreshed.";
+      form.querySelector('[name="pg_dreams"]').value = "Dreams of regular daily activities and family.";
+      form.querySelector('[name="pg_desires"]').value = "Sweet and warm foods.";
+      form.querySelector('[name="pg_aversion"]').value = "Sour foods, cold milk.";
+      form.querySelector('[name="pg_intolerance"]').value = "Eggplant";
+      form.querySelector('[name="pg_sexual"]').value = "LMP: 2 weeks ago, regular 28-day cycle. No dysmenorrhea.";
+
+      // Section 8: Mental Generals
+      form.querySelector('[name="mg_stress"]').value = "Becomes anxious, talks excessively.";
+      form.querySelector('[name="mg_fear"]').value = "Fear of heights and losing loved ones.";
+      form.querySelector('[name="mg_personality"]').value = "Introverted, sensitive to criticism, organized.";
+      form.querySelector('[name="mg_hobbies"]').value = "Reading, gardening.";
+      form.querySelector('[name="mg_consolation"]').value = "Consolation makes her feel better.";
+      form.querySelector('[name="mg_relationships"]').value = "Maintains friendly terms. Emotional processing is rapid but persistent.";
+
+      // Section 9: Physical Characteristics
+      form.querySelector('[name="pc_pulse"]').value = "78 bpm";
+      form.querySelector('[name="pc_bp"]').value = "120/80 mmHg";
+      form.querySelector('[name="pc_temp"]').value = "98.4 °F";
+      form.querySelector('[name="pc_resp"]').value = "16 rpm";
+      form.querySelector('[name="pc_cyanosis"]').value = "Absent";
+      form.querySelector('[name="pc_anaemia"]').value = "Absent";
+      form.querySelector('[name="pc_jaundice"]').value = "Absent";
+      form.querySelector('[name="pc_oedema"]').value = "Absent";
+      form.querySelector('[name="pc_headache"]').value = "Occasional, frontal region.";
+      form.querySelector('[name="pc_senses"]').value = "Normal hearing, slight myopia in right eye.";
+      form.querySelector('[name="pc_skin"]').value = "Dry skin, prone to mild eczema in winters.";
+      form.querySelector('[name="pc_hair"]').value = "Thin hair texture.";
+      form.querySelector('[name="pc_pain"]').value = "Throbbing or aching character.";
+
+      // Section 10: CNS
+      form.querySelector('[name="cns_cranial"]').value = "Intact, normal pupillary light reflexes.";
+      form.querySelector('[name="cns_power"]').value = "Power 5/5 in all limbs, normal tone.";
+      form.querySelector('[name="cns_reflexes"]').value = "Deep tendon reflexes normal (2+).";
+      form.querySelector('[name="cns_coord"]').value = "Normal finger-to-nose test, normal gait.";
+      form.querySelector('[name="cns_movements"]').value = "No tremors, fasciculations, or involuntary movements.";
+      form.querySelector('[name="cns_sphincter"]').value = "Full voluntary control.";
+
+      // Section 11: MSE
+      form.querySelector('[name="mse_appearance"]').value = "Neat, dressed appropriately. Cooperative.";
+      form.querySelector('[name="mse_activity"]').value = "Normal psychomotor activity, no agitation.";
+      form.querySelector('[name="mse_speech"]').value = "Normal rate, volume, and flow.";
+      form.querySelector('[name="mse_mood"]').value = "Subjective: Anxious. Objective: Euthymic.";
+      form.querySelector('[name="mse_thoughts"]').value = "Logical progression. No delusions or hallucinations.";
+      form.querySelector('[name="mse_orientation"]').value = "Oriented fully to time, place, and person.";
+      form.querySelector('[name="mse_memory"]').value = "Intact immediate, recent, and remote memory.";
+      form.querySelector('[name="mse_insight"]').value = "Insight Grade 5 (True emotional insight). Good judgment.";
+
+      // Section 12: Analysis
+      form.querySelector('[name="analysis_patient"]').value = `1. Throbbing pain worse in cold weather.\n2. Chilly temperament.\n3. Sweats on palms when anxious.`;
+      form.querySelector('[name="analysis_disease"]').value = "1. Unilateral throbbing pain.\n2. Triggered by stress and bright lights.\n3. Nausea/Vomiting (absent in patient).";
+
+      // Section 13: Final Section
+      form.querySelector('[name="fs_totality"]').value = `Patient presents chilly thermal reaction, throbbing ${p.condition.toLowerCase()} pain, sensitivity to cold and stress.`;
+      form.querySelector('[name="fs_acute"]').value = "Belladonna 200C";
+      form.querySelector('[name="fs_const"]').value = "Silicea 1M";
+      form.querySelector('[name="fs_diag"]').value = p.condition;
+      
+      const rx = MEDICINE_DATA.find(m => m.patient === p.name);
+      if (rx) {
+        form.querySelector('[name="fs_rx"]').value = `${rx.medicine} - ${rx.dosage} | ${rx.frequency}.\nFollow up after 2 weeks.`;
+      } else {
+        form.querySelector('[name="fs_rx"]').value = "Silicea 1M - 4 pills once a week in morning.\nAvoid sour food.";
+      }
+      
+      form.querySelector('[name="fs_review"]').value = "2026-05-28";
+      form.querySelector('[name="fs_doctor"]').value = "Dr. Priya S.";
+
+      document.getElementById('saveStatus').innerText = 'Viewing Case Sheet (Viewing Mode)';
     }
 
     function restoreDraft() {
@@ -708,7 +890,15 @@
     form.addEventListener('change', saveDraft);
 
     // Initial Load
-    document.addEventListener('DOMContentLoaded', restoreDraft);
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const patientId = urlParams.get('id');
+      if (patientId) {
+        loadPatientCaseSheet(patientId);
+      } else {
+        restoreDraft();
+      }
+    });
 
     // Form Actions
     function resetForm() {

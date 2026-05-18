@@ -241,7 +241,8 @@ function renderAllPatients() {
       <td>${p.condition}</td>
       <td><span class="badge badge-${p.tag === 'new' ? 'confirmed' : 'pending'}">${p.tag === "new" ? "New" : "Returning"}</span></td>
       <td>
-        <button class="tbl-action" title="View" onclick="openPatientProfile('${p.id}')"><i class="fa-solid fa-eye"></i></button>
+        <button class="tbl-action" title="View Profile" onclick="openPatientProfile('${p.id}')"><i class="fa-solid fa-eye"></i></button>
+        <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${p.id}'" style="color: var(--accent);"><i class="fa-solid fa-file-medical"></i></button>
         <button class="tbl-action" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
       </td>
     </tr>`).join("");
@@ -265,6 +266,11 @@ function openPatientProfile(id) {
   const billBtn = document.getElementById("detNewBillBtn");
   if (billBtn) {
     billBtn.onclick = () => window.location.href = `billing.html?id=${p.id}`;
+  }
+
+  const csBtn = document.getElementById("detCaseSheetBtn");
+  if (csBtn) {
+    csBtn.onclick = () => window.location.href = `register.html?id=${p.id}`;
   }
 
   // Populate History (Mock)

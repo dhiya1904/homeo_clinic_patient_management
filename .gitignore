@@ -1,0 +1,12 @@
+# Node dependencies
+node_modules/
+backend/node_modules/
+
+# Local database (SQLite)
+backend/database.sqlite
+database.sqlite
+
+# System files & env
+.env
+.DS_Store
+Thumbs.db
