@@ -1640,41 +1640,8 @@ function renderCalendar() {
 
     dayBox.innerHTML = `<span class="calendar-date">${d}</span>`;
     
-    // Check for appointments (Mock Data Mapping)
+    // Check for appointments (real database appointments)
     let dayApts = [];
-    if (month === 4) {
-      if (d === 13) {
-        dayBox.classList.add("has-apt");
-        dayBox.innerHTML += `
-          <div class="apt-pill"><i class="fa-solid fa-user-check"></i> 6 Appts</div>
-          <div class="apt-pill pending" style="margin-top:4px"><i class="fa-solid fa-clock"></i> 2 Pending</div>
-        `;
-        dayApts = [
-          { name: "Meera Nair", time: "09:30 AM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" },
-          { name: "Rahul Sharma", time: "10:15 AM", doctor: "Dr. Priya S.", type: "New Consultation", status: "Confirmed" },
-          { name: "Kiran Patel", time: "11:00 AM", doctor: "Dr. Arjun K.", type: "Follow-up", status: "Pending" },
-          { name: "Aditi Rao", time: "11:45 AM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" },
-          { name: "Suresh Menon", time: "02:15 PM", doctor: "Dr. Arjun K.", type: "Emergency", status: "Pending" },
-          { name: "Divya Nair", time: "03:00 PM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" }
-        ];
-      } else if (d === 15) {
-        dayBox.classList.add("has-apt");
-        dayBox.innerHTML += `<div class="apt-pill"><i class="fa-solid fa-user-check"></i> 3 Confirmed</div>`;
-        dayApts = [
-          { name: "Amit Verma", time: "10:00 AM", doctor: "Dr. Arjun K.", type: "Follow-up", status: "Confirmed" },
-          { name: "Sneha Reddy", time: "11:30 AM", doctor: "Dr. Priya S.", type: "New Consultation", status: "Confirmed" },
-          { name: "Vikram Sen", time: "04:15 PM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" }
-        ];
-      } else if (d === 20) {
-        dayBox.classList.add("has-apt");
-        dayBox.innerHTML += `<div class="apt-pill"><i class="fa-solid fa-user-check"></i> 3 Confirmed</div>`;
-        dayApts = [
-          { name: "John Doe", time: "09:00 AM", doctor: "Dr. Priya S.", type: "Follow-up", status: "Confirmed" },
-          { name: "Jane Smith", time: "12:00 PM", doctor: "Dr. Arjun K.", type: "Follow-up", status: "Confirmed" },
-          { name: "Rajesh Kumar", time: "03:30 PM", doctor: "Dr. Priya S.", type: "New Consultation", status: "Confirmed" }
-        ];
-      }
-    }
 
     // Hover tooltip event listener
     if (dayApts.length > 0) {
