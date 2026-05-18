@@ -201,14 +201,6 @@
                 <input type="text" id="occupation" name="occupation" placeholder="e.g. Engineer" />
               </div>
               <div class="form-group">
-                <label>Education</label>
-                <input type="text" id="education" name="education" placeholder="e.g. B.Tech" />
-              </div>
-              <div class="form-group">
-                <label>Religion</label>
-                <input type="text" id="religion" name="religion" />
-              </div>
-              <div class="form-group">
                 <label>Diet Type</label>
                 <select id="dietType" name="dietType">
                   <option value="">Select</option>
@@ -410,10 +402,8 @@
               <div class="form-group"><label>Early Development</label><textarea rows="2" name="ph_dev"></textarea></div>
               <div class="form-group"><label>Vaccination History</label><textarea rows="2" name="ph_vaccine"></textarea></div>
               <div class="form-group"><label>Animal Bites</label><textarea rows="2" name="ph_bites"></textarea></div>
-              <div class="form-group"><label>Educational History</label><textarea rows="2" name="ph_edu"></textarea></div>
               <div class="form-group"><label>Occupational History</label><textarea rows="2" name="ph_occ"></textarea></div>
               <div class="form-group"><label>Sexual & Marital History</label><textarea rows="2" name="ph_marital"></textarea></div>
-              <div class="form-group"><label>Religious History</label><textarea rows="2" name="ph_religion"></textarea></div>
             </div>
           </div>
         </div>
@@ -680,7 +670,6 @@
       document.getElementById('dob').value = "1992-04-12";
       document.getElementById('maritalStatus').value = "Married";
       document.getElementById('occupation').value = "Teacher";
-      document.getElementById('religion').value = "Hindu";
       document.getElementById('dietType').value = "Vegetarian";
       document.getElementById('phone').value = "+91 98456 12345";
       document.getElementById('address').value = "Greenwood Apartments, Flat 4B, MG Road, Bangalore";
@@ -754,10 +743,8 @@
       form.querySelector('[name="ph_dev"]').value = "Achieved milestones at appropriate ages.";
       form.querySelector('[name="ph_vaccine"]').value = "Fully vaccinated as per pediatric schedule.";
       form.querySelector('[name="ph_bites"]').value = "No history of animal bites.";
-      form.querySelector('[name="ph_edu"]').value = "Graduate in Education.";
       form.querySelector('[name="ph_occ"]').value = "Works as a Primary School Teacher.";
       form.querySelector('[name="ph_marital"]').value = "Happily married. Positive spousal relationship.";
-      form.querySelector('[name="ph_religion"]').value = "Regular visitor to temple, spiritual inclination.";
 
       // Section 7: Physical Generals
       form.querySelector('[name="pg_appetite"]').value = "Good, regular meals.";
@@ -990,12 +977,10 @@
             <div class="print-grid-item span-2"><span class="print-label">Patient Name:</span><span class="print-value">${getVal('fullName')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Age / Gender:</span><span class="print-value">${getVal('age')} / ${getVal('gender')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Occupation:</span><span class="print-value">${getVal('occupation')}</span></div>
-            <div class="print-grid-item span-2"><span class="print-label">Education:</span><span class="print-value">${getVal('education')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Marital Status:</span><span class="print-value">${getVal('maritalStatus')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Phone No:</span><span class="print-value">${getVal('phone')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Diet Type:</span><span class="print-value">${getVal('dietType')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Date of Birth:</span><span class="print-value">${getVal('dob')}</span></div>
-            <div class="print-grid-item span-2"><span class="print-label">Religion:</span><span class="print-value">${getVal('religion')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Referred By:</span><span class="print-value">${getVal('referredBy')}</span></div>
             <div class="print-grid-item span-4"><span class="print-label">Address:</span><span class="print-value">${getVal('address')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Provisional Diagnosis:</span><span class="print-value">${getVal('provisionalDiag')}</span></div>
@@ -1094,10 +1079,8 @@
             <div class="print-grid-item span-2"><span class="print-label">Early Development & Milestones:</span><span class="print-value">${getVal('ph_dev')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Vaccination & Reactions:</span><span class="print-value">${getVal('ph_vaccine')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Animal Bites:</span><span class="print-value">${getVal('ph_bites')}</span></div>
-            <div class="print-grid-item span-2"><span class="print-label">Educational History:</span><span class="print-value">${getVal('ph_edu')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Occupational History:</span><span class="print-value">${getVal('ph_occ')}</span></div>
             <div class="print-grid-item span-2"><span class="print-label">Sexual & Marital Adjustment:</span><span class="print-value">${getVal('ph_marital')}</span></div>
-            <div class="print-grid-item span-2"><span class="print-label">Religious History:</span><span class="print-value">${getVal('ph_religion')}</span></div>
           </div>
           
           <div style="margin-top: 50px; border: 1px dashed #ccc; padding: 15px;">
