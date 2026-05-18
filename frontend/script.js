@@ -931,7 +931,7 @@ const MEDICINE_PRICES = {
 
 let CURRENT_BILL = {
   patient: null,
-  consultation: 500,
+  consultation: 350,
   medicines: [],
   lab: 0,
   service: 0,
@@ -992,6 +992,17 @@ function removeBillItem(index) {
 function initBillingPage() {
   const billForm = document.getElementById("billing-page-container");
   if (!billForm) return;
+
+  // Dynamically set consultation fee based on primary doctor in settings
+  const primaryDocName = localStorage.getItem("doctor-name") || "Dr. Priya S.";
+  const primaryDoc = AVAILABLE_DOCTORS.find(d => d.name === primaryDocName);
+  const defaultFee = primaryDoc ? primaryDoc.charge : 350;
+  
+  const consInput = document.getElementById("billConsultation");
+  if (consInput) {
+    consInput.value = defaultFee;
+    CURRENT_BILL.consultation = defaultFee;
+  }
 
   // Auto-load patient from URL if present
   const urlParams = new URLSearchParams(window.location.search);
@@ -1061,26 +1072,22 @@ function initBillingPage() {
 }
 
 // ── REPORTS DATA ─────────────────────────────────────────────
-const REPORT_DATA = [
-  { month: "January",   revenue: 54000, patients: 120, appts: 145 },
-  { month: "February",  revenue: 61000, patients: 135, appts: 160 },
-  { month: "March",     revenue: 48000, patients: 110, appts: 130 },
-  { month: "April",     revenue: 72000, patients: 155, appts: 185 },
-  { month: "May",       revenue: 84500, patients: 190, appts: 210 },
-  { month: "June",      revenue: 67000, patients: 145, appts: 170 },
-  { month: "July",      revenue: 78000, patients: 165, appts: 195 },
-];
+const REPORT_DATA = [];
 
 function renderReportTable() {
   const tbody = document.getElementById("reportsTableBody");
   if (!tbody) return;
+  if (REPORT_DATA.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--muted); font-size: 14px;"><i class="fa-solid fa-folder-open" style="font-size: 20px; display: block; margin-bottom: 8px;"></i>No revenue records found yet.</td></tr>`;
+    return;
+  }
   tbody.innerHTML = REPORT_DATA.map(r => `
     <tr>
       <td><strong>${r.month} 2026</strong></td>
       <td style="color:var(--accent); font-weight:bold">₹${r.revenue.toLocaleString('en-IN')}</td>
       <td>${r.patients}</td>
       <td>${r.appts}</td>
-      <td><span class="badge badge-confirmed">+${Math.floor(Math.random() * 15 + 5)}%</span></td>
+      <td><span class="badge badge-confirmed">+0%</span></td>
     </tr>
   `).join("");
 }
@@ -1161,15 +1168,17 @@ function initReportsPage() {
                 </tr>
               </thead>
               <tbody>
-                ${REPORT_DATA.map(r => `
-                  <tr>
-                    <td><strong>${r.month} 2026</strong></td>
-                    <td style="color:#2563eb; font-weight:700">₹${r.revenue.toLocaleString('en-IN')}</td>
-                    <td>${r.patients}</td>
-                    <td>${r.appts}</td>
-                    <td style="color:#16a34a; font-weight:600">+${Math.floor(Math.random() * 15 + 5)}%</td>
-                  </tr>
-                `).join("")}
+                ${REPORT_DATA.length === 0 
+                  ? '<tr><td colspan="5" style="text-align: center; padding: 16px; color: #64748b; font-size: 14px;">No revenue records found yet.</td></tr>'
+                  : REPORT_DATA.map(r => `
+                    <tr>
+                      <td><strong>${r.month} 2026</strong></td>
+                      <td style="color:#2563eb; font-weight:700">₹${r.revenue.toLocaleString('en-IN')}</td>
+                      <td>${r.patients}</td>
+                      <td>${r.appts}</td>
+                      <td style="color:#16a34a; font-weight:600">+0%</td>
+                    </tr>
+                  `).join("")}
               </tbody>
             </table>
 
@@ -1275,12 +1284,28 @@ function initDoctorName() {
 }
 
 // ── AVAILABLE DOCTORS MANAGEMENT ─────────────────────────────
-let AVAILABLE_DOCTORS = ["Dr. Priya S.", "Dr. Arjun K."];
+let AVAILABLE_DOCTORS = [
+  { name: "Dr. Priya S.", charge: 350 },
+  { name: "Dr. Arjun K.", charge: 300 }
+];
 
 function loadAvailableDoctors() {
   const saved = localStorage.getItem("available-doctors");
   if (saved) {
-    AVAILABLE_DOCTORS = JSON.parse(saved);
+    try {
+      const parsed = JSON.parse(saved);
+      AVAILABLE_DOCTORS = parsed.map(d => {
+        if (typeof d === "string") {
+          return { name: d, charge: d === "Dr. Priya S." ? 350 : 300 };
+        }
+        return d;
+      });
+    } catch (e) {
+      AVAILABLE_DOCTORS = [
+        { name: "Dr. Priya S.", charge: 350 },
+        { name: "Dr. Arjun K.", charge: 300 }
+      ];
+    }
   } else {
     localStorage.setItem("available-doctors", JSON.stringify(AVAILABLE_DOCTORS));
   }
@@ -1318,10 +1343,10 @@ function applyAvailableDoctorsToDropdowns() {
       select.appendChild(webOpt);
     }
     
-    AVAILABLE_DOCTORS.forEach(docName => {
+    AVAILABLE_DOCTORS.forEach(doc => {
       const opt = document.createElement("option");
-      opt.value = docName;
-      opt.textContent = docName;
+      opt.value = doc.name;
+      opt.textContent = `${doc.name} (₹${doc.charge || 0})`;
       select.appendChild(opt);
     });
     
@@ -1333,7 +1358,7 @@ function applyAvailableDoctorsToDropdowns() {
         select.value = currentVal;
       }
     } else if (select.name === "fs_doctor") {
-      select.value = localStorage.getItem("doctor-name") || AVAILABLE_DOCTORS[0] || "Dr. Priya S.";
+      select.value = localStorage.getItem("doctor-name") || (AVAILABLE_DOCTORS[0] ? AVAILABLE_DOCTORS[0].name : "Dr. Priya S.");
     }
   });
 }
@@ -1344,11 +1369,11 @@ function renderSettingsDocsList() {
   
   container.innerHTML = "";
   if (AVAILABLE_DOCTORS.length === 0) {
-    container.innerHTML = `<span style="color: var(--muted); font-size: 13px;">No doctors added yet. Enter a name above to add.</span>`;
+    container.innerHTML = `<span style="color: var(--muted); font-size: 13px;">No doctors added yet. Enter a name and fee above to add.</span>`;
     return;
   }
   
-  AVAILABLE_DOCTORS.forEach(docName => {
+  AVAILABLE_DOCTORS.forEach(doc => {
     const badge = document.createElement("div");
     badge.className = "doctor-badge";
     badge.style.display = "flex";
@@ -1363,8 +1388,8 @@ function renderSettingsDocsList() {
     badge.style.color = "var(--text)";
     
     badge.innerHTML = `
-      <span>${docName}</span>
-      <i class="fa-solid fa-xmark remove-doc-btn" style="cursor: pointer; color: var(--muted); font-size: 12px;" data-name="${docName}"></i>
+      <span>${doc.name} (₹${doc.charge || 0})</span>
+      <i class="fa-solid fa-xmark remove-doc-btn" style="cursor: pointer; color: var(--muted); font-size: 12px;" data-name="${doc.name}"></i>
     `;
     
     container.appendChild(badge);
@@ -1374,7 +1399,7 @@ function renderSettingsDocsList() {
   container.querySelectorAll(".remove-doc-btn").forEach(btn => {
     btn.addEventListener("click", (e) => {
       const nameToRemove = e.target.getAttribute("data-name");
-      AVAILABLE_DOCTORS = AVAILABLE_DOCTORS.filter(d => d !== nameToRemove);
+      AVAILABLE_DOCTORS = AVAILABLE_DOCTORS.filter(d => d.name !== nameToRemove);
       saveAvailableDoctors();
       renderSettingsDocsList();
     });
@@ -1391,30 +1416,37 @@ function initAvailableDoctors() {
     
     const addBtn = document.getElementById("addDocBtn");
     const input = document.getElementById("newDocInput");
+    const chargeInput = document.getElementById("newDocChargeInput");
     
     if (addBtn && input) {
       addBtn.addEventListener("click", (e) => {
         e.preventDefault();
         const val = input.value.trim();
+        const chargeVal = parseInt(chargeInput?.value.trim() || "0", 10);
+        
         if (val) {
-          if (!AVAILABLE_DOCTORS.includes(val)) {
-            AVAILABLE_DOCTORS.push(val);
+          const exists = AVAILABLE_DOCTORS.some(d => d.name === val);
+          if (!exists) {
+            AVAILABLE_DOCTORS.push({ name: val, charge: chargeVal });
             saveAvailableDoctors();
             renderSettingsDocsList();
             input.value = "";
-            showToast(`Added ${val} to available doctors.`);
+            if (chargeInput) chargeInput.value = "";
+            showToast(`Added ${val} with fee ₹${chargeVal}.`);
           } else {
             showToast("Doctor is already in the list!");
           }
         }
       });
       
-      input.addEventListener("keypress", (e) => {
+      const handleEnter = (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
           addBtn.click();
         }
-      });
+      };
+      input.addEventListener("keypress", handleEnter);
+      if (chargeInput) chargeInput.addEventListener("keypress", handleEnter);
     }
   }
 }

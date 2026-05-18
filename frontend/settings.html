@@ -184,12 +184,13 @@
             </div>
             
             <div class="form-group" style="grid-column: span 2; border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 0.5rem;">
-              <label style="font-size: 14px; font-weight: 700; margin-bottom: 0.5rem; display: block; color: var(--text);"><i class="fa-solid fa-user-doctor"></i> Manage Available Doctors</label>
-              <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">Add or remove doctors who consult at the clinic. These doctors will instantly appear in all appointment, case sheet, and prescription dropdowns.</p>
+              <label style="font-size: 14px; font-weight: 700; margin-bottom: 0.5rem; display: block; color: var(--text);"><i class="fa-solid fa-user-doctor"></i> Manage Available Doctors & Consultation Charges</label>
+              <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">Add or remove doctors who consult at the clinic, along with their custom consultation fees. These fees automatically propagate throughout your billing system!</p>
               
-              <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
-                <input type="text" id="newDocInput" placeholder="Enter Doctor's Name (e.g. Dr. Arjun K.)" style="margin: 0; flex: 1;" />
-                <button type="button" class="btn btn-primary" id="addDocBtn" style="padding: 0 1.5rem;"><i class="fa-solid fa-plus"></i> Add</button>
+              <div style="display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap;">
+                <input type="text" id="newDocInput" placeholder="Enter Doctor's Name (e.g. Dr. Arjun K.)" style="margin: 0; flex: 2; min-width: 200px;" />
+                <input type="number" id="newDocChargeInput" placeholder="Consultation Fee (₹)" style="margin: 0; flex: 1; min-width: 130px;" min="0" />
+                <button type="button" class="btn btn-primary" id="addDocBtn" style="padding: 0 1.5rem;"><i class="fa-solid fa-plus"></i> Add Doctor</button>
               </div>
               
               <div id="docsListContainer" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: rgba(0,0,0,0.02); border: 1px dashed var(--border); border-radius: 6px; min-height: 44px; align-items: center;">
