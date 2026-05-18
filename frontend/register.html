@@ -583,11 +583,13 @@
         Auto-saving enabled.
       </div>
       <button type="button" class="btn btn-ghost" onclick="resetForm()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
-      <button type="button" class="btn btn-ghost" onclick="window.print()" style="color: var(--accent); border: 1px solid var(--accent);"><i class="fa-solid fa-print"></i> Print / PDF</button>
+      <button type="button" class="btn btn-ghost" onclick="printCaseSheet()" style="color: var(--accent); border: 1px solid var(--accent);"><i class="fa-solid fa-print"></i> Print / PDF</button>
       <button type="button" class="btn btn-primary" onclick="submitCaseSheet()"><i class="fa-solid fa-floppy-disk"></i> Save Case Sheet</button>
     </div>
 
   </div>
+
+  <div id="case-sheet-print-layout"></div>
 
   <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
@@ -935,6 +937,341 @@
       toast.style.background = type === "error" ? "#ef4444" : "#0d9488";
       toast.className = "toast show";
       setTimeout(() => { toast.className = "toast"; }, 3000);
+    }
+
+    function printCaseSheet() {
+      const getVal = (name) => {
+        const el = document.querySelector(`[name="${name}"]`) || document.getElementById(name);
+        return el ? el.value : '';
+      };
+
+      // Helper to extract table rows
+      const getTableRowsHTML = (tableId, colCount) => {
+        const rows = Array.from(document.querySelectorAll(`#${tableId} tbody tr`));
+        let html = '';
+        rows.forEach(tr => {
+          const inputs = Array.from(tr.querySelectorAll('input, select'));
+          if (inputs.some(input => input.value.trim() !== '')) {
+            html += '<tr>';
+            inputs.forEach(input => {
+              html += `<td>${input.value}</td>`;
+            });
+            html += '</tr>';
+          }
+        });
+        // Add a default empty row if no rows were filled
+        if (html === '') {
+          html += `<tr>${'<td>&nbsp;</td>'.repeat(colCount)}</tr>`;
+        }
+        return html;
+      };
+
+      const printLayout = document.getElementById('case-sheet-print-layout');
+      if (!printLayout) return;
+
+      // Build Pages matching JIREH HOMOEOPATHY CASE RECORD
+      let html = `
+        <!-- PAGE 1 -->
+        <div class="print-page">
+          <div class="print-header">
+            <h1>Jireh Homoeopathy</h1>
+            <p>Comprehensive Case Record & Management System</p>
+          </div>
+          
+          <div class="print-section-title">Registration Details</div>
+          <div class="print-grid">
+            <div class="print-grid-item span-2"><span class="print-label">Registration No:</span><span class="print-value">${getVal('regNo')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Date:</span><span class="print-value">${getVal('regDate')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Patient Name:</span><span class="print-value">${getVal('fullName')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Age / Gender:</span><span class="print-value">${getVal('age')} / ${getVal('gender')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Occupation:</span><span class="print-value">${getVal('occupation')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Education:</span><span class="print-value">${getVal('education')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Marital Status:</span><span class="print-value">${getVal('maritalStatus')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Phone No:</span><span class="print-value">${getVal('phone')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Diet Type:</span><span class="print-value">${getVal('dietType')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Date of Birth:</span><span class="print-value">${getVal('dob')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Religion:</span><span class="print-value">${getVal('religion')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Referred By:</span><span class="print-value">${getVal('referredBy')}</span></div>
+            <div class="print-grid-item span-4"><span class="print-label">Address:</span><span class="print-value">${getVal('address')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Provisional Diagnosis:</span><span class="print-value">${getVal('provisionalDiag')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Final Diagnosis:</span><span class="print-value">${getVal('finalDiag')}</span></div>
+          </div>
+
+          <div class="print-section-title">1. Chief Complaints & Associated Symptoms</div>
+          <div class="print-textarea-box">${getVal('complaints')}</div>
+
+          <div class="print-section-title">2. History of Present Illness</div>
+          <div class="print-grid">
+            <div class="print-grid-item span-2"><span class="print-label">Onset:</span><span class="print-value">${getVal('onsetType')}</span></div>
+            <div class="print-grid-item"><span class="print-label">Duration:</span><span class="print-value">${getVal('duration')}</span></div>
+            <div class="print-grid-item"><span class="print-label">Precipitating Factors:</span><span class="print-value">${getVal('precipitating')}</span></div>
+          </div>
+        </div>
+
+        <!-- PAGE 2 -->
+        <div class="print-page">
+          <div class="print-header">
+            <h1>Jireh Homoeopathy</h1>
+            <p>Case Record Continuation Sheet</p>
+          </div>
+          <div class="print-section-title">History of Present Illness (Continuation & Detailed Evolution)</div>
+          <div class="print-textarea-box" style="min-height: 500px;">${getVal('hpi')}</div>
+        </div>
+
+        <!-- PAGE 3 -->
+        <div class="print-page">
+          <div class="print-header">
+            <h1>Jireh Homoeopathy</h1>
+            <p>Medical & Family Background</p>
+          </div>
+          
+          <div class="print-section-title">3. Past Medical History</div>
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th>Disease/Condition</th>
+                <th>Age/Year</th>
+                <th>Duration</th>
+                <th>Recovery</th>
+                <th>Medication</th>
+                <th>Adverse Events</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${getTableRowsHTML('pastMedicalTable', 6)}
+            </tbody>
+          </table>
+
+          <div class="print-section-title">4. History of Substance Use</div>
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th>Substance</th>
+                <th>Amount/Frequency</th>
+                <th>Age of Initiation</th>
+                <th>Continuous Use?</th>
+                <th>Last Use</th>
+                <th>Withdrawal Symptoms</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${getTableRowsHTML('substanceTable', 6)}
+            </tbody>
+          </table>
+
+          <div class="print-section-title">5. Family History</div>
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th>Relationship</th>
+                <th>Status</th>
+                <th>Age</th>
+                <th>Illness History</th>
+                <th>Cause of Death</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${getTableRowsHTML('familyTable', 5)}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGE 4 -->
+        <div class="print-page">
+          <div class="print-header">
+            <h1>Jireh Homoeopathy</h1>
+            <p>Personal & Developmental History</p>
+          </div>
+          
+          <div class="print-section-title">6. Personal History</div>
+          <div class="print-grid">
+            <div class="print-grid-item span-2"><span class="print-label">Birth History (Prenatal / Natal / Postnatal):</span><span class="print-value">${getVal('ph_birth')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Early Development & Milestones:</span><span class="print-value">${getVal('ph_dev')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Vaccination & Reactions:</span><span class="print-value">${getVal('ph_vaccine')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Animal Bites:</span><span class="print-value">${getVal('ph_bites')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Educational History:</span><span class="print-value">${getVal('ph_edu')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Occupational History:</span><span class="print-value">${getVal('ph_occ')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Sexual & Marital Adjustment:</span><span class="print-value">${getVal('ph_marital')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Religious History:</span><span class="print-value">${getVal('ph_religion')}</span></div>
+          </div>
+          
+          <div style="margin-top: 50px; border: 1px dashed #ccc; padding: 15px;">
+            <span class="print-label" style="font-size: 12px; margin-bottom: 8px;">Developmental Milestones Reference Checklist (Age / Status)</span>
+            <div class="print-development-grid">
+              <div class="print-development-item"><span>Teething</span><span>✓ / 6m</span></div>
+              <div class="print-development-item"><span>Weaning</span><span>✓ / 1y</span></div>
+              <div class="print-development-item"><span>Sitting</span><span>✓ / 8m</span></div>
+              <div class="print-development-item"><span>Standing</span><span>✓ / 11m</span></div>
+              <div class="print-development-item"><span>Walking</span><span>✓ / 13m</span></div>
+              <div class="print-development-item"><span>Speaking</span><span>✓ / 18m</span></div>
+              <div class="print-development-item"><span>Bedwetting</span><span>X / None</span></div>
+              <div class="print-development-item"><span>Nail Biting</span><span>X / None</span></div>
+              <div class="print-development-item"><span>Phobias</span><span>X / None</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE 5 -->
+        <div class="print-page">
+          <div class="print-header">
+            <h1>Jireh Homoeopathy</h1>
+            <p>Physical Generals & Biological Cycles</p>
+          </div>
+
+          <div class="print-section-title">7. Physical Generals</div>
+          <div class="print-grid">
+            <div class="print-grid-item span-2"><span class="print-label">Appetite & Hunger:</span><span class="print-value">${getVal('pg_appetite')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Thirst & Preferences:</span><span class="print-value">${getVal('pg_thirst')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Bowels (Frequency & Consistency):</span><span class="print-value">${getVal('pg_bowels')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Bladder (Urinary habits):</span><span class="print-value">${getVal('pg_bladder')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Perspiration / Sweating details:</span><span class="print-value">${getVal('pg_perspiration')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Thermal Reaction:</span><span class="print-value">${getVal('pg_thermal')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Sleep Quality & Posture:</span><span class="print-value">${getVal('pg_sleep')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Dreams Nature:</span><span class="print-value">${getVal('pg_dreams')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Food Desires:</span><span class="print-value">${getVal('pg_desires')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Food Aversions:</span><span class="print-value">${getVal('pg_aversion')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Food Intolerances:</span><span class="print-value">${getVal('pg_intolerance')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Active Hormonal State:</span><span class="print-value">${getVal('pg_thermal')}</span></div>
+            <div class="print-grid-item span-4"><span class="print-label">Menstrual / Obstetric / Sexual History:</span><span class="print-value">${getVal('pg_sexual')}</span></div>
+          </div>
+        </div>
+
+        <!-- PAGE 6 -->
+        <div class="print-page">
+          <div class="print-header">
+            <h1>Jireh Homoeopathy</h1>
+            <p>Psychological Profile & Mental Generals</p>
+          </div>
+
+          <div class="print-section-title">8. Mental Generals</div>
+          <div class="print-grid">
+            <div class="print-grid-item span-2"><span class="print-label">Reaction to Conflict / Stress:</span><span class="print-value">${getVal('mg_stress')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Fears & Phobias:</span><span class="print-value">${getVal('mg_fear')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Personality Attributes:</span><span class="print-value">${getVal('mg_personality')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Hobbies & Interests:</span><span class="print-value">${getVal('mg_hobbies')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Consolation & Sympathy Reaction:</span><span class="print-value">${getVal('mg_consolation')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Relationships & Interpersonal adjustment:</span><span class="print-value">${getVal('mg_relationships')}</span></div>
+          </div>
+
+          <div style="margin-top: 40px; border: 1px solid #000; padding: 15px; background: #fafafa;">
+            <span class="print-label" style="margin-bottom: 8px;">Clinical Remarks on Mental Disposition</span>
+            <p style="font-size: 12px; margin: 0; color: #555; line-height: 1.6;">
+              Assessment of cognitive style, emotional intelligence, resilience factors, and physiological somatization under acute and chronic emotional conflicts.
+            </p>
+          </div>
+        </div>
+
+        <!-- PAGE 7 -->
+        <div class="print-page">
+          <div class="print-header">
+            <h1>Jireh Homoeopathy</h1>
+            <p>Physical Examination & Systemic Check</p>
+          </div>
+
+          <div class="print-section-title">9. Physical Characteristics (Vitals & Head-to-Toe)</div>
+          <div class="print-grid">
+            <div class="print-grid-item"><span class="print-label">Pulse Rate:</span><span class="print-value">${getVal('pc_pulse')}</span></div>
+            <div class="print-grid-item"><span class="print-label">Blood Pressure:</span><span class="print-value">${getVal('pc_bp')}</span></div>
+            <div class="print-grid-item"><span class="print-label">Temperature:</span><span class="print-value">${getVal('pc_temp')}</span></div>
+            <div class="print-grid-item"><span class="print-label">Respiration:</span><span class="print-value">${getVal('pc_resp')}</span></div>
+            
+            <div class="print-grid-item"><span class="print-label">Cyanosis:</span><span class="print-value">${getVal('pc_cyanosis')}</span></div>
+            <div class="print-grid-item"><span class="print-label">Anaemia / Pallor:</span><span class="print-value">${getVal('pc_anaemia')}</span></div>
+            <div class="print-grid-item"><span class="print-label">Jaundice / Icterus:</span><span class="print-value">${getVal('pc_jaundice')}</span></div>
+            <div class="print-grid-item"><span class="print-label">Oedema:</span><span class="print-value">${getVal('pc_oedema')}</span></div>
+
+            <div class="print-grid-item span-2"><span class="print-label">Vertigo / Headache:</span><span class="print-value">${getVal('pc_headache')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Vision & Hearing:</span><span class="print-value">${getVal('pc_senses')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Skin (Eruptions, textures):</span><span class="print-value">${getVal('pc_skin')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Hair & Nails (Tendencies):</span><span class="print-value">${getVal('pc_hair')}</span></div>
+            <div class="print-grid-item span-4"><span class="print-label">Character of Pain:</span><span class="print-value">${getVal('pc_pain')}</span></div>
+          </div>
+
+          <div class="print-section-title">10. Central Nervous System (CNS) Examination</div>
+          <div class="print-grid">
+            <div class="print-grid-item span-2"><span class="print-label">Cranial Nerves:</span><span class="print-value">${getVal('cns_cranial')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Power & Tone:</span><span class="print-value">${getVal('cns_power')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Reflexes (Superficial/Deep):</span><span class="print-value">${getVal('cns_reflexes')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Coordination & Movements:</span><span class="print-value">${getVal('cns_coord')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Involuntary Movements:</span><span class="print-value">${getVal('cns_movements')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Sphincter Control (Bowel/Bladder):</span><span class="print-value">${getVal('cns_sphincter')}</span></div>
+          </div>
+        </div>
+
+        <!-- PAGE 8 -->
+        <div class="print-page">
+          <div class="print-header">
+            <h1>Jireh Homoeopathy</h1>
+            <p>Mental Status Examination (MSE)</p>
+          </div>
+
+          <div class="print-section-title">11. Mental Status Examination Details</div>
+          <div class="print-grid">
+            <div class="print-grid-item span-2"><span class="print-label">Appearance & Behaviour:</span><span class="print-value">${getVal('mse_appearance')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Psychomotor Activity:</span><span class="print-value">${getVal('mse_activity')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Speech Flow & Rate:</span><span class="print-value">${getVal('mse_speech')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Mood & Affect range:</span><span class="print-value">${getVal('mse_mood')}</span></div>
+            <div class="print-grid-item span-4"><span class="print-label">Thoughts Stream, Content & Hallucinations:</span><span class="print-value">${getVal('mse_thoughts')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Orientation (Time, Place, Person):</span><span class="print-value">${getVal('mse_orientation')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Memory Span (Immediate, Recent, Remote):</span><span class="print-value">${getVal('mse_memory')}</span></div>
+            <div class="print-grid-item span-4"><span class="print-label">Insight Grade & Judgement level:</span><span class="print-value">${getVal('mse_insight')}</span></div>
+          </div>
+          
+          <div style="margin-top: 40px; border: 1px dashed #000; padding: 15px;">
+            <span class="print-label" style="margin-bottom: 8px;">Visceral Sphincter Assessment Summary</span>
+            <p style="font-size: 12px; margin: 0; color: #555;">
+              No evidence of primitive reflexes, involuntary tremors, or visceral sphincter control deficits at current clinical examination.
+            </p>
+          </div>
+        </div>
+
+        <!-- PAGE 9 -->
+        <div class="print-page">
+          <div class="print-header">
+            <h1>Jireh Homoeopathy</h1>
+            <p>Symptom Analysis & Clinical Prescription</p>
+          </div>
+
+          <div class="print-section-title">12. Analysis of Symptoms</div>
+          <div class="print-grid" style="grid-template-columns: 1fr 1fr;">
+            <div style="border: 1px solid #000; padding: 12px; min-height: 150px; white-space: pre-wrap;">
+              <span class="print-label" style="border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 8px;">SYMPTOMS OF THE PATIENT</span>
+              ${getVal('analysis_patient')}
+            </div>
+            <div style="border: 1px solid #000; padding: 12px; min-height: 150px; white-space: pre-wrap;">
+              <span class="print-label" style="border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 8px;">SYMPTOMS OF THE DISEASE</span>
+              ${getVal('analysis_disease')}
+            </div>
+          </div>
+
+          <div class="print-section-title">13. Repertorization Totality & Prescription Details</div>
+          <div class="print-grid">
+            <div class="print-grid-item span-4"><span class="print-label">Totality Considered:</span><span class="print-value">${getVal('fs_totality')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Acute Remedies Considered:</span><span class="print-value">${getVal('fs_acute')}</span></div>
+            <div class="print-grid-item span-2"><span class="print-label">Constitutional Remedies:</span><span class="print-value">${getVal('fs_const')}</span></div>
+            <div class="print-grid-item span-4"><span class="print-label">Final Diagnosis & Plan:</span><span class="print-value">${getVal('fs_diag')}</span></div>
+          </div>
+
+          <div class="print-section-title">Prescription & Clinical Advice (Rx)</div>
+          <div class="print-textarea-box" style="min-height: 150px; font-family: monospace; font-size: 14px;">${getVal('fs_rx')}</div>
+
+          <div class="print-grid" style="margin-top: 40px;">
+            <div class="print-grid-item span-2"><span class="print-label">Review Date:</span><span class="print-value">${getVal('fs_review')}</span></div>
+            <div class="print-grid-item span-2" style="border: none; display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end;">
+              <div style="width: 200px; border-top: 1px solid #000; text-align: center; padding-top: 6px;">
+                <strong style="font-size: 13px;">${getVal('fs_doctor') || 'Dr. Priya S.'}</strong>
+                <p style="font-size: 10px; margin: 2px 0 0 0; color: #666; text-transform: uppercase;">Consulting Homoeopath</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      printLayout.innerHTML = html;
+
+      document.body.classList.add("printing-case-sheet");
+      window.print();
+      document.body.classList.remove("printing-case-sheet");
     }
   </script>
 </body>
