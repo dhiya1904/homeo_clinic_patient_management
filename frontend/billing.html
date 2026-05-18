@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    if (!localStorage.getItem("token")) {
+      window.location.href = "login.html";
+    }
+  </script>
   <meta name="description" content="Patient Billing and Invoicing - Jireh Homeopathy" />
   <title>Jireh Homeopathy | Billing</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
