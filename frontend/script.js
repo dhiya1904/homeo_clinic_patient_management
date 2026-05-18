@@ -3,53 +3,16 @@
    ============================================================ */
 
 // ── DATA ──────────────────────────────────────────────────────
-const APPOINTMENTS = [
-  { id: 1, name: "Meera Nair",      time: "09:00 AM", doctor: "Dr. Priya S.",  type: "New Consultation", status: "confirmed" },
-  { id: 2, name: "Arjun Pillai",    time: "09:45 AM", doctor: "Dr. Arjun K.", type: "Follow-up",        status: "pending"   },
-  { id: 3, name: "Divya Menon",     time: "10:30 AM", doctor: "Dr. Priya S.",  type: "Follow-up",        status: "confirmed" },
-  { id: 4, name: "Rahul Thomas",    time: "11:15 AM", doctor: "Dr. Arjun K.", type: "Emergency",        status: "cancelled" },
-  { id: 5, name: "Sreelakshmi V.",  time: "12:00 PM", doctor: "Dr. Priya S.",  type: "New Consultation", status: "confirmed" },
-  { id: 6, name: "Kiran Das",       time: "02:00 PM", doctor: "Dr. Arjun K.", type: "Follow-up",        status: "pending"   },
-];
-
-const PAST_APPOINTMENTS = [
-  { id: 101, date: "May 08, 2026", name: "Anil Kumar",   time: "10:00 AM", doctor: "Dr. Priya S.", type: "Follow-up", status: "confirmed" },
-  { id: 102, date: "May 08, 2026", name: "Sneha Nair",   time: "11:30 AM", doctor: "Dr. Arjun K.", type: "New Consultation", status: "confirmed" },
-  { id: 103, date: "May 07, 2026", name: "Ravi Teja",    time: "09:15 AM", doctor: "Dr. Priya S.", type: "Emergency", status: "confirmed" },
-  { id: 104, date: "May 07, 2026", name: "Geetha M.",    time: "04:00 PM", doctor: "Dr. Arjun K.", type: "Follow-up", status: "cancelled" },
-];
-
-const PATIENT_DATA = { total: 1284, new: 214, repeat: 538, old: 532 };
-
-const PATIENTS = [
-  { id: "P-1001", name: "Meera Nair",     age: 34, condition: "Migraine",      tag: "new",  color: "#3b82f6" },
-  { id: "P-1002", name: "Arjun Pillai",   age: 29, condition: "Allergic Rhinitis", tag: "old", color: "#7c3aed" },
-  { id: "P-1003", name: "Divya Menon",    age: 42, condition: "Arthritis",     tag: "old",  color: "#0d9488" },
-  { id: "P-1004", name: "Rahul Thomas",   age: 55, condition: "Hypertension",  tag: "old",  color: "#d97706" },
-  { id: "P-1005", name: "Sreelakshmi V.", age: 28, condition: "Skin Allergy",  tag: "new",  color: "#e11d48" },
-];
-
-const FOLLOWUPS = [
-  { name: "Binu George",    date: "Today, 4:00 PM",   urgency: "today"    },
-  { name: "Latha Suresh",   date: "Tomorrow, 10:00 AM", urgency: "soon"  },
-  { name: "Pradeep Kumar",  date: "May 10, 9:30 AM",  urgency: "upcoming" },
-  { name: "Anitha Raj",     date: "May 11, 2:00 PM",  urgency: "upcoming" },
-];
-
+const APPOINTMENTS = [];
+const PAST_APPOINTMENTS = [];
+const PATIENT_DATA = { total: 0, new: 0, repeat: 0, old: 0 };
+const PATIENTS = [];
+const FOLLOWUPS = [];
 const CHART_DATA = {
-  weekly:  { labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], values: [6200,8400,5100,9300,7800,11200,8500] },
-  monthly: { labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul"], values: [54000,61000,48000,72000,84500,67000,78000] },
+  weekly:  { labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], values: [0,0,0,0,0,0,0] },
+  monthly: { labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul"], values: [0,0,0,0,0,0,0] },
 };
-
-const MEDICINE_DATA = [
-  { patient: "Meera Nair",      medicine: "Arnica Montana 200", dosage: "5 drops", frequency: "3 times a day", status: "Running", start: "May 01, 2026" },
-  { patient: "Arjun Pillai",    medicine: "Nux Vomica 30",     dosage: "4 pills", frequency: "twice daily",  status: "Running", start: "May 05, 2026" },
-  { patient: "Divya Menon",     medicine: "Rhus Tox 200C",     dosage: "5 drops", frequency: "once a day",    status: "Completed", start: "Apr 20, 2026" },
-  { patient: "Rahul Thomas",    medicine: "Belladonna 1M",     dosage: "2 pills", frequency: "every 4 hours", status: "Running", start: "May 10, 2026" },
-  { patient: "Sreelakshmi V.",  medicine: "Pulsatilla 30",     dosage: "5 drops", frequency: "bedtime",       status: "Running", start: "May 08, 2026" },
-  { patient: "Anil Kumar",      medicine: "Lycopodium 200",    dosage: "4 pills", frequency: "morning",       status: "Completed", start: "Apr 15, 2026" },
-  { patient: "Sneha Nair",      medicine: "Ignatia 30",        dosage: "5 drops", frequency: "thrice daily",  status: "Running", start: "May 02, 2026" },
-];
+const MEDICINE_DATA = [];
 
 
 // ── UTILITIES ─────────────────────────────────────────────────
@@ -1244,7 +1207,7 @@ function setTheme(theme) {
 }
 
 function initTheme() {
-  const savedTheme = localStorage.getItem("clinic-theme") || "dark";
+  const savedTheme = localStorage.getItem("clinic-theme") || "light";
   document.documentElement.setAttribute("data-theme", savedTheme);
 }
 
@@ -1254,7 +1217,7 @@ function initThemeToggleBtn() {
   const notifBtn = document.getElementById("notifBtn");
   if (!notifBtn) return;
 
-  const savedTheme = localStorage.getItem("clinic-theme") || "dark";
+  const savedTheme = localStorage.getItem("clinic-theme") || "light";
   const btn = document.createElement("button");
   btn.id = "themeToggleBtn";
   btn.className = "icon-btn";
@@ -1265,7 +1228,7 @@ function initThemeToggleBtn() {
     : '<i class="fa-solid fa-moon"></i>';
 
   btn.addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-theme") || "dark";
+    const current = document.documentElement.getAttribute("data-theme") || "light";
     setTheme(current === "dark" ? "light" : "dark");
   });
 
@@ -1460,7 +1423,7 @@ function initSettingsPage() {
   const settingsContainer = document.getElementById("settings-page-container");
   if (!settingsContainer) return;
 
-  const savedTheme = localStorage.getItem("clinic-theme") || "dark";
+  const savedTheme = localStorage.getItem("clinic-theme") || "light";
   const themeToggle = document.getElementById("themeToggle");
   if (themeToggle) {
     themeToggle.value = savedTheme;
