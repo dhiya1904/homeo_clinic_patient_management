@@ -1850,7 +1850,10 @@ function showAptDetailsModal(dateLabel, apts) {
   modal.style.display = "flex";
 }
 
-const API_URL = "/api";
+// Centralized API configuration: defaults to localhost for development, and points to the live Render web service in production.
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://localhost:5000/api"
+  : "https://homeo-clinic-patient-management.onrender.com/api";
 
 function initLoginPage() {
   const form = document.getElementById("loginForm");
