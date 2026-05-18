@@ -1299,8 +1299,8 @@ function applyDoctorName(name) {
   const elements = document.querySelectorAll(".admin-name");
   elements.forEach(el => el.textContent = name);
   
-  // Update Case Sheet input value in register.html if it is present
-  const docInput = document.querySelector('input[name="fs_doctor"]');
+  // Update Case Sheet select value in register.html if it is present
+  const docInput = document.querySelector('[name="fs_doctor"]');
   if (docInput) {
     docInput.value = name;
   }
@@ -1309,6 +1309,134 @@ function applyDoctorName(name) {
 function initDoctorName() {
   const savedName = localStorage.getItem("doctor-name") || "Dr. Priya S.";
   applyDoctorName(savedName);
+}
+
+// ── AVAILABLE DOCTORS MANAGEMENT ─────────────────────────────
+let AVAILABLE_DOCTORS = ["Dr. Priya S.", "Dr. Arjun K."];
+
+function loadAvailableDoctors() {
+  const saved = localStorage.getItem("available-doctors");
+  if (saved) {
+    AVAILABLE_DOCTORS = JSON.parse(saved);
+  } else {
+    localStorage.setItem("available-doctors", JSON.stringify(AVAILABLE_DOCTORS));
+  }
+}
+
+function saveAvailableDoctors() {
+  localStorage.setItem("available-doctors", JSON.stringify(AVAILABLE_DOCTORS));
+  applyAvailableDoctorsToDropdowns();
+}
+
+function applyAvailableDoctorsToDropdowns() {
+  const dropdowns = document.querySelectorAll(".doctor-select");
+  dropdowns.forEach(select => {
+    const currentVal = select.value;
+    select.innerHTML = "";
+    
+    // Check if it's an appointment/prescription select which needs a placeholder
+    if (select.id === "aptDoctor" || select.id === "prescDoctor") {
+      const defaultOpt = document.createElement("option");
+      defaultOpt.value = "";
+      defaultOpt.textContent = "Select Doctor";
+      select.appendChild(defaultOpt);
+    }
+    
+    AVAILABLE_DOCTORS.forEach(docName => {
+      const opt = document.createElement("option");
+      opt.value = docName;
+      opt.textContent = docName;
+      select.appendChild(opt);
+    });
+    
+    // Restore value if still in list, or set primary doctor as fallback
+    if (currentVal && AVAILABLE_DOCTORS.includes(currentVal)) {
+      select.value = currentVal;
+    } else if (select.name === "fs_doctor") {
+      select.value = localStorage.getItem("doctor-name") || AVAILABLE_DOCTORS[0] || "Dr. Priya S.";
+    }
+  });
+}
+
+function renderSettingsDocsList() {
+  const container = document.getElementById("docsListContainer");
+  if (!container) return;
+  
+  container.innerHTML = "";
+  if (AVAILABLE_DOCTORS.length === 0) {
+    container.innerHTML = `<span style="color: var(--muted); font-size: 13px;">No doctors added yet. Enter a name above to add.</span>`;
+    return;
+  }
+  
+  AVAILABLE_DOCTORS.forEach(docName => {
+    const badge = document.createElement("div");
+    badge.className = "doctor-badge";
+    badge.style.display = "flex";
+    badge.style.alignItems = "center";
+    badge.style.gap = "8px";
+    badge.style.background = "var(--bg)";
+    badge.style.border = "1px solid var(--border)";
+    badge.style.padding = "6px 12px";
+    badge.style.borderRadius = "20px";
+    badge.style.fontSize = "13px";
+    badge.style.fontWeight = "600";
+    badge.style.color = "var(--text)";
+    
+    badge.innerHTML = `
+      <span>${docName}</span>
+      <i class="fa-solid fa-xmark remove-doc-btn" style="cursor: pointer; color: var(--muted); font-size: 12px;" data-name="${docName}"></i>
+    `;
+    
+    container.appendChild(badge);
+  });
+  
+  // Attach remove listeners
+  container.querySelectorAll(".remove-doc-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const nameToRemove = e.target.getAttribute("data-name");
+      AVAILABLE_DOCTORS = AVAILABLE_DOCTORS.filter(d => d !== nameToRemove);
+      saveAvailableDoctors();
+      renderSettingsDocsList();
+    });
+  });
+}
+
+function initAvailableDoctors() {
+  loadAvailableDoctors();
+  applyAvailableDoctorsToDropdowns();
+  
+  const container = document.getElementById("docsListContainer");
+  if (container) {
+    renderSettingsDocsList();
+    
+    const addBtn = document.getElementById("addDocBtn");
+    const input = document.getElementById("newDocInput");
+    
+    if (addBtn && input) {
+      addBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const val = input.value.trim();
+        if (val) {
+          if (!AVAILABLE_DOCTORS.includes(val)) {
+            AVAILABLE_DOCTORS.push(val);
+            saveAvailableDoctors();
+            renderSettingsDocsList();
+            input.value = "";
+            showToast(`Added ${val} to available doctors.`);
+          } else {
+            showToast("Doctor is already in the list!");
+          }
+        }
+      });
+      
+      input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          addBtn.click();
+        }
+      });
+    }
+  }
 }
 
 function initSettingsPage() {
@@ -1800,6 +1928,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initThemeToggleBtn();
   initClinicName();
   initDoctorName();
+  initAvailableDoctors();
   initSidebar();
   initNav();
   initAdminDropdown();
