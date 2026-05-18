@@ -481,6 +481,10 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   background: rgba(0, 0, 0, 0.04);
 }
 
+#case-sheet-print-layout {
+  display: none;
+}
+
 /* ===== PRINT STYLES ===== */
 @media print {
   body.printing-invoice * { visibility: hidden; }
