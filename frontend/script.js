@@ -1289,6 +1289,28 @@ function initClinicName() {
   applyClinicName(savedName);
 }
 
+// ── DOCTOR NAME PERSISTENCE ──────────────────────────────────
+function setDoctorName(name) {
+  localStorage.setItem("doctor-name", name);
+  applyDoctorName(name);
+}
+
+function applyDoctorName(name) {
+  const elements = document.querySelectorAll(".admin-name");
+  elements.forEach(el => el.textContent = name);
+  
+  // Update Case Sheet input value in register.html if it is present
+  const docInput = document.querySelector('input[name="fs_doctor"]');
+  if (docInput) {
+    docInput.value = name;
+  }
+}
+
+function initDoctorName() {
+  const savedName = localStorage.getItem("doctor-name") || "Dr. Priya S.";
+  applyDoctorName(savedName);
+}
+
 function initSettingsPage() {
   const settingsContainer = document.getElementById("settings-page-container");
   if (!settingsContainer) return;
@@ -1306,12 +1328,24 @@ function initSettingsPage() {
     clinicInput.value = localStorage.getItem("clinic-name") || "Jireh Homeopathy";
   }
 
+  // Load current doctor name into input
+  const doctorInput = document.getElementById("setDoctorName");
+  if (doctorInput) {
+    doctorInput.value = localStorage.getItem("doctor-name") || "Dr. Priya S.";
+  }
+
   document.getElementById("saveSettingsBtn")?.addEventListener("click", () => {
     const newName = document.getElementById("setClinicName").value.trim();
+    const newDoc = document.getElementById("setDoctorName").value.trim();
+    
     if (newName) {
       setClinicName(newName);
-      showToast(`Clinic name updated to "${newName}"`);
     }
+    if (newDoc) {
+      setDoctorName(newDoc);
+    }
+    
+    showToast("Settings updated successfully!");
   });
 }
 
@@ -1765,6 +1799,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initTheme();
   initThemeToggleBtn();
   initClinicName();
+  initDoctorName();
   initSidebar();
   initNav();
   initAdminDropdown();
