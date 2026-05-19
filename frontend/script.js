@@ -1245,6 +1245,134 @@ function initThemeToggleBtn() {
   notifBtn.parentNode.insertBefore(btn, notifBtn);
 }
 
+// ── NOTIFICATION PANEL ────────────────────────────────────────
+function initNotificationPanel() {
+  const notifBtn = document.getElementById("notifBtn");
+  if (!notifBtn) return;
+
+  // Create the dropdown panel
+  const panel = document.createElement("div");
+  panel.id = "notifPanel";
+  panel.style.cssText = `
+    display: none; position: absolute; top: calc(100% + 12px); right: 0;
+    width: 340px; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    z-index: 9999; overflow: hidden; animation: fadeSlideDown 0.18s ease;
+  `;
+
+  // Build notification content from today's appointments
+  function buildPanelContent() {
+    const today = new Date().toISOString().split("T")[0];
+    const todayApts = APPOINTMENTS.filter(a => a.date === today || (a.datetime && a.datetime.startsWith(today)));
+
+    const followUps = APPOINTMENTS.filter(a => {
+      const d = a.date || (a.datetime && a.datetime.split("T")[0]);
+      return d === today && a.status === "Pending";
+    });
+
+    const notifications = [];
+
+    if (todayApts.length > 0) {
+      notifications.push({
+        icon: "fa-calendar-check",
+        color: "#3b82f6",
+        title: `${todayApts.length} appointment${todayApts.length > 1 ? "s" : ""} today`,
+        sub: todayApts.slice(0, 2).map(a => a.patient || a.name || "Patient").join(", ") + (todayApts.length > 2 ? ` +${todayApts.length - 2} more` : ""),
+        time: "Today"
+      });
+    }
+
+    if (followUps.length > 0) {
+      notifications.push({
+        icon: "fa-clock-rotate-left",
+        color: "#f59e0b",
+        title: `${followUps.length} pending follow-up${followUps.length > 1 ? "s" : ""}`,
+        sub: "Awaiting confirmation",
+        time: "Today"
+      });
+    }
+
+    // Add a static system info item if nothing real
+    if (notifications.length === 0) {
+      notifications.push({
+        icon: "fa-circle-check",
+        color: "#16a34a",
+        title: "All clear for today!",
+        sub: "No appointments or follow-ups pending.",
+        time: "Now"
+      });
+    }
+
+    const dot = notifBtn.querySelector(".notif-dot");
+    if (dot) {
+      // Show dot only if real items exist
+      dot.style.display = todayApts.length > 0 || followUps.length > 0 ? "block" : "none";
+    }
+
+    return `
+      <div style="padding: 14px 18px 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: 700; font-size: 15px; color: var(--text);">Notifications</span>
+        <span style="font-size: 12px; color: var(--muted);">${notifications.length} new</span>
+      </div>
+      <div style="max-height: 320px; overflow-y: auto;">
+        ${notifications.map(n => `
+          <div style="display: flex; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); align-items: flex-start; cursor: pointer; transition: background 0.15s;" 
+               onmouseenter="this.style.background='rgba(59,130,246,0.06)'" onmouseleave="this.style.background=''">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: ${n.color}22; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i class="fa-solid ${n.icon}" style="color: ${n.color}; font-size: 15px;"></i>
+            </div>
+            <div style="flex: 1;">
+              <p style="margin: 0 0 3px; font-weight: 600; font-size: 13.5px; color: var(--text);">${n.title}</p>
+              <p style="margin: 0; font-size: 12px; color: var(--muted);">${n.sub}</p>
+            </div>
+            <span style="font-size: 11px; color: var(--muted); white-space: nowrap; margin-top: 2px;">${n.time}</span>
+          </div>
+        `).join("")}
+      </div>
+      <div style="padding: 12px 18px; text-align: center;">
+        <a href="appointments.html" style="font-size: 13px; color: var(--accent); font-weight: 600; text-decoration: none;">View All Appointments →</a>
+      </div>
+    `;
+  }
+
+  panel.innerHTML = buildPanelContent();
+
+  // Position panel relative to topbar-right
+  const topbarRight = notifBtn.closest(".topbar-right") || notifBtn.parentNode;
+  topbarRight.style.position = "relative";
+  topbarRight.appendChild(panel);
+
+  // Toggle on bell click
+  notifBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = panel.style.display === "block";
+    if (!isOpen) {
+      panel.innerHTML = buildPanelContent();
+    }
+    panel.style.display = isOpen ? "none" : "block";
+  });
+
+  // Close on outside click
+  document.addEventListener("click", (e) => {
+    if (!panel.contains(e.target) && e.target !== notifBtn) {
+      panel.style.display = "none";
+    }
+  });
+
+  // Add fadeSlideDown keyframe if not already present
+  if (!document.getElementById("notif-anim-style")) {
+    const style = document.createElement("style");
+    style.id = "notif-anim-style";
+    style.textContent = `
+      @keyframes fadeSlideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
 // ── CLINIC NAME PERSISTENCE ──────────────────────────────────
 function setClinicName(name) {
   localStorage.setItem("clinic-name", name);
@@ -1908,6 +2036,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 1. Initialize UI
   initTheme();
   initThemeToggleBtn();
+  initNotificationPanel();
   initClinicName();
   initDoctorName();
   initAvailableDoctors();
