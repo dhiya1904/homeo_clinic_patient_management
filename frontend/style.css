@@ -68,27 +68,27 @@
 
 /* Dark Theme Variables */
 [data-theme="dark"] {
-  --bg:          #111827;
-  --surface:     #1f2937;
-  --surface-2:   #374151;
-  --sidebar-bg:  #111827;
-  --sidebar-hover: #1f2937;
+  --bg:          #000000;
+  --surface:     #121212;
+  --surface-2:   #1e1e1e;
+  --sidebar-bg:  #000000;
+  --sidebar-hover: #171717;
 
-  --border:      #374151;
-  --border-muted:#1f2937;
-  --border-dark: #4b5563;
+  --border:      #262626;
+  --border-muted:#171717;
+  --border-dark: #333333;
 
-  --text:        #f9fafb;
-  --text-2:      #d1d5db;
-  --muted:       #9ca3af;
+  --text:        #ffffff;
+  --text-2:      #a1a1aa;
+  --muted:       #71717a;
 
-  --accent-subtle: rgba(37, 99, 235, 0.2);
-  --topbar-bg: rgba(17, 24, 39, 0.85);
+  --accent-subtle: rgba(255, 255, 255, 0.08);
+  --topbar-bg: rgba(0, 0, 0, 0.85);
   
   --shadow-xs: none;
-  --shadow:    0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.5);
+  --shadow:    0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.9);
 }
 
 
