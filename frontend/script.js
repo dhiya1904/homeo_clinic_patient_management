@@ -193,22 +193,42 @@ function renderPatients() {
 }
 
 // ── ALL PATIENTS TABLE (patients.html) ─────────────────────────
-function renderAllPatients() {
+function renderAllPatients(patientsData) {
   const tbody = document.getElementById("allPatientsBody");
   if (!tbody) return;
-  tbody.innerHTML = PATIENTS.map(p => `
-    <tr>
-      <td><div class="patient-avatar" style="background:${p.color};width:32px;height:32px;font-size:12px;margin:auto;">${getInitials(p.name)}</div></td>
-      <td><strong style="color:var(--accent); cursor:pointer" onclick="openPatientProfile('${p.id}')">${p.name}</strong></td>
-      <td>${p.age}</td>
-      <td>${p.condition}</td>
-      <td><span class="badge badge-${p.tag === 'new' ? 'confirmed' : 'pending'}">${p.tag === "new" ? "New" : "Returning"}</span></td>
+
+  // Use provided data or fall back to global PATIENTS array
+  const data = patientsData || PATIENTS;
+
+  // Update the count badge
+  const badge = document.getElementById("patientCountBadge");
+  if (badge) badge.textContent = data.length;
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--muted)"><i class="fa-solid fa-users" style="font-size:2rem;margin-bottom:0.8rem;display:block;"></i>No patients registered yet.<br><a href="register.html" style="color:var(--accent);font-weight:600;">Register your first patient →</a></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(p => {
+    const color = p.color || '#60a5fa';
+    const name = p.name || 'Unknown';
+    const age = p.age || '—';
+    const condition = p.complaints || p.condition || '—';
+    const tag = p.tag || 'new';
+    const id = p.id || '';
+    return `<tr>
+      <td><div class="patient-avatar" style="background:${color};width:32px;height:32px;font-size:12px;margin:auto;">${getInitials(name)}</div></td>
+      <td><strong style="color:var(--accent); cursor:pointer" onclick="openPatientProfile('${id}')">${name}</strong></td>
+      <td>${age}</td>
+      <td>${condition}</td>
+      <td><span class="badge badge-${tag === 'new' ? 'confirmed' : 'pending'}">${tag === 'new' ? 'New' : 'Returning'}</span></td>
       <td>
-        <button class="tbl-action" title="View Profile" onclick="openPatientProfile('${p.id}')"><i class="fa-solid fa-eye"></i></button>
-        <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${p.id}'" style="color: var(--accent);"><i class="fa-solid fa-file-medical"></i></button>
+        <button class="tbl-action" title="View Profile" onclick="openPatientProfile('${id}')"><i class="fa-solid fa-eye"></i></button>
+        <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${id}'" style="color: var(--accent);"><i class="fa-solid fa-file-medical"></i></button>
         <button class="tbl-action" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
       </td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
 }
 
 function openPatientProfile(id) {
@@ -383,9 +403,8 @@ function initAdminDropdown() {
   const profile = document.getElementById("adminProfile");
   if (!profile) return;
 
-  let justOpened = false;
-
-  profile.addEventListener("click", () => {
+  profile.addEventListener("click", (e) => {
+    e.stopPropagation();
     const isOpen = profile.classList.contains("open");
     if (isOpen) {
       profile.classList.remove("open");
@@ -393,12 +412,10 @@ function initAdminDropdown() {
     } else {
       profile.classList.add("open");
       profile.setAttribute("aria-expanded", "true");
-      justOpened = true;
     }
   });
 
   document.addEventListener("click", () => {
-    if (justOpened) { justOpened = false; return; }
     profile.classList.remove("open");
     profile.setAttribute("aria-expanded", "false");
   });
@@ -1092,10 +1109,148 @@ function renderReportTable() {
   `).join("");
 }
 
-function initReportsPage() {
-  if (!document.getElementById("reports-page-container")) return;
-  renderReportTable();
-  
+async function initReportsPage() {
+  const container = document.getElementById("reports-page-container");
+  if (!container) return;
+
+  try {
+    // 1. Fetch backend analytics data in parallel
+    const [patients, appointments, bills] = await Promise.all([
+      getBackendPatients(),
+      getBackendAppointments(),
+      getBackendBilling()
+    ]);
+
+    // 2. Populate Summary Stat Cards
+    // 2.a. Total Patients
+    const totalPatients = patients.length;
+    const patEl = document.getElementById("reportTotalPatients");
+    if (patEl) patEl.textContent = totalPatients;
+
+    // 2.b. Total Appointments
+    const totalApts = appointments.length;
+    const aptEl = document.getElementById("reportTotalApts");
+    if (aptEl) aptEl.textContent = totalApts;
+
+    // 2.c. Cancellations
+    const cancellations = appointments.filter(a => a.status === "cancelled" || a.status === "Cancelled").length;
+    const cancelEl = document.getElementById("reportCancellations");
+    if (cancelEl) cancelEl.textContent = cancellations;
+
+    // 2.d. Total Revenue
+    const totalRevenue = bills.reduce((sum, b) => sum + (parseFloat(b.total_amount) || 0), 0);
+    const revEl = document.getElementById("reportTotalRevenue");
+    if (revEl) revEl.textContent = "₹" + Math.round(totalRevenue).toLocaleString("en-IN");
+
+    // 3. Populate Patient Demographics variables & render donut chart
+    let newCount = 0, repeatCount = 0, chronicCount = 0;
+    patients.forEach(p => {
+      if (p.tag === "new" || p.tag === "New") newCount++;
+      else if (p.tag === "repeat" || p.tag === "Repeat") repeatCount++;
+      else chronicCount++;
+    });
+
+    PATIENT_DATA.total = totalPatients || 1; // avoid divide by zero
+    PATIENT_DATA.new = newCount;
+    PATIENT_DATA.repeat = repeatCount;
+    PATIENT_DATA.old = chronicCount;
+
+    // Trigger donut chart drawing
+    renderDonutChart();
+
+    // 4. Group Billing and Appointments by Month for 2026 Monthly Breakdown
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthFullNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    
+    const monthlyStats = {};
+    monthFullNames.forEach(m => {
+      monthlyStats[m] = { revenue: 0, patients: new Set(), appts: 0 };
+    });
+
+    // Process bills
+    bills.forEach(b => {
+      if (b.date) {
+        let d = new Date(b.date);
+        if (isNaN(d.getTime())) {
+          d = new Date(b.date.replace(" ", "T"));
+        }
+        if (!isNaN(d.getTime())) {
+          const mName = monthFullNames[d.getMonth()];
+          monthlyStats[mName].revenue += parseFloat(b.total_amount) || 0;
+          if (b.patient_id) {
+            monthlyStats[mName].patients.add(b.patient_id);
+          }
+        }
+      }
+    });
+
+    // Process appointments
+    appointments.forEach(a => {
+      if (a.date) {
+        let d = new Date(a.date);
+        if (isNaN(d.getTime())) {
+          d = new Date(a.date.replace(" ", "T"));
+        }
+        if (!isNaN(d.getTime())) {
+          const mName = monthFullNames[d.getMonth()];
+          monthlyStats[mName].appts++;
+          if (a.patient_id) {
+            monthlyStats[mName].patients.add(a.patient_id);
+          }
+        }
+      }
+    });
+
+    // Clear and build REPORT_DATA array
+    REPORT_DATA.length = 0;
+    monthFullNames.forEach(mName => {
+      const stats = monthlyStats[mName];
+      if (stats.revenue > 0 || stats.appts > 0 || stats.patients.size > 0) {
+        REPORT_DATA.push({
+          month: mName.substring(0, 3), // e.g. "May", "Jun"
+          revenue: Math.round(stats.revenue),
+          patients: stats.patients.size,
+          appts: stats.appts,
+        });
+      }
+    });
+
+    // Fallback seed month if database is empty
+    if (REPORT_DATA.length === 0) {
+      REPORT_DATA.push({
+        month: "May",
+        revenue: Math.round(totalRevenue),
+        patients: totalPatients,
+        appts: totalApts
+      });
+    }
+
+    // Call renderReportTable to populate the breakdown table
+    renderReportTable();
+
+    // 5. Update Monthly Revenue Trends chart values
+    CHART_DATA.monthly.labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"];
+    CHART_DATA.monthly.values = CHART_DATA.monthly.labels.map(lbl => {
+      const fullIdx = monthNames.indexOf(lbl);
+      const mName = monthFullNames[fullIdx];
+      return Math.round(monthlyStats[mName]?.revenue || 0);
+    });
+
+    // Fallback seed chart values if all monthly revenue is zero
+    const sumMonthlyValues = CHART_DATA.monthly.values.reduce((s, v) => s + v, 0);
+    if (sumMonthlyValues === 0) {
+      CHART_DATA.monthly.values = [0, 0, 0, 0, Math.round(totalRevenue) || 0, 0, 0];
+    }
+
+    // Render monthly revenue trends chart
+    renderChart("monthly");
+
+  } catch (error) {
+    console.error("Failed to dynamically load reports statistics:", error);
+    showToast("Error loading analytics data from backend.", "error");
+  }
+
+  // Handle Dynamic PDF downloads
   const downloadBtn = document.getElementById("downloadRevenuePdfBtn");
   if (downloadBtn) {
     downloadBtn.addEventListener("click", () => {
@@ -1104,6 +1259,9 @@ function initReportsPage() {
         showToast("Popup blocked! Please allow popups to download reports.", "error");
         return;
       }
+
+      const totalRev = REPORT_DATA.reduce((s, r) => s + r.revenue, 0);
+      const totalAptsCount = REPORT_DATA.reduce((s, r) => s + r.appts, 0);
       
       printWindow.document.write(`
         <html>
@@ -1143,16 +1301,16 @@ function initReportsPage() {
             
             <div class="stats-summary">
               <div class="stat-box">
-                <div class="lbl">TOTAL REVENUE (MAY)</div>
-                <div class="val">₹84,500.00</div>
+                <div class="lbl">TOTAL REVENUE (2026)</div>
+                <div class="val">₹${totalRev.toLocaleString('en-IN')}</div>
               </div>
               <div class="stat-box">
                 <div class="lbl">TOTAL APPOINTMENTS</div>
-                <div class="val">210</div>
+                <div class="val">${totalAptsCount}</div>
               </div>
               <div class="stat-box">
-                <div class="lbl">GROWTH RATE</div>
-                <div class="val">+18.4%</div>
+                <div class="lbl">STATUS</div>
+                <div class="val">Active</div>
               </div>
             </div>
 
@@ -1204,14 +1362,6 @@ function initReportsPage() {
 function setTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem("clinic-theme", theme);
-  // Update toggle button icon on all pages
-  const btn = document.getElementById("themeToggleBtn");
-  if (btn) {
-    btn.innerHTML = theme === "dark"
-      ? '<i class="fa-solid fa-sun"></i>'
-      : '<i class="fa-solid fa-moon"></i>';
-    btn.title = theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode";
-  }
   showToast(`Switched to ${theme} mode`);
 }
 
@@ -1220,30 +1370,7 @@ function initTheme() {
   document.documentElement.setAttribute("data-theme", savedTheme);
 }
 
-// ── TOPBAR THEME TOGGLE BUTTON ────────────────────────────────
-function initThemeToggleBtn() {
-  // Inject a sun/moon button next to the notification bell in every page
-  const notifBtn = document.getElementById("notifBtn");
-  if (!notifBtn) return;
-
-  const savedTheme = localStorage.getItem("clinic-theme") || "light";
-  const btn = document.createElement("button");
-  btn.id = "themeToggleBtn";
-  btn.className = "icon-btn";
-  btn.title = savedTheme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode";
-  btn.setAttribute("aria-label", "Toggle theme");
-  btn.innerHTML = savedTheme === "dark"
-    ? '<i class="fa-solid fa-sun"></i>'
-    : '<i class="fa-solid fa-moon"></i>';
-
-  btn.addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-theme") || "light";
-    setTheme(current === "dark" ? "light" : "dark");
-  });
-
-  // Insert before the notification button
-  notifBtn.parentNode.insertBefore(btn, notifBtn);
-}
+// Topbar theme toggle button has been removed as per settings-only requirement.
 
 // ── NOTIFICATION PANEL ────────────────────────────────────────
 function initNotificationPanel() {
@@ -1387,17 +1514,32 @@ function applyClinicName(name) {
 function initClinicName() {
   const savedName = localStorage.getItem("clinic-name") || "Jireh Homeopathy";
   applyClinicName(savedName);
+
+  // Make logos clickable to return to dashboard
+  const logos = document.querySelectorAll(".logo");
+  logos.forEach(logo => {
+    logo.style.cursor = "pointer";
+    logo.addEventListener("click", () => {
+      window.location.href = "index.html";
+    });
+  });
 }
 
-// ── DOCTOR NAME PERSISTENCE ──────────────────────────────────
-function setDoctorName(name) {
+// ── DOCTOR / ADMIN PROFILE PERSISTENCE ──────────────────────────────────
+function setDoctorName(name, role = "Administrator") {
   localStorage.setItem("doctor-name", name);
-  applyDoctorName(name);
+  localStorage.setItem("admin-role", role);
+  applyDoctorName(name, role);
 }
 
-function applyDoctorName(name) {
-  const elements = document.querySelectorAll(".admin-name");
-  elements.forEach(el => el.textContent = name);
+function applyDoctorName(name, role) {
+  const nameElements = document.querySelectorAll(".admin-name");
+  nameElements.forEach(el => el.textContent = name);
+  
+  const roleElements = document.querySelectorAll(".admin-role");
+  if (roleElements) {
+    roleElements.forEach(el => el.textContent = role || "Administrator");
+  }
   
   // Update Case Sheet select value in register.html if it is present
   const docInput = document.querySelector('[name="fs_doctor"]');
@@ -1406,9 +1548,72 @@ function applyDoctorName(name) {
   }
 }
 
+function showProfileModal() {
+  const existing = document.getElementById('profileModalOverlay');
+  if (existing) existing.remove();
+
+  const currentName = localStorage.getItem("doctor-name") || "Dr. Priya S.";
+  const currentRole = localStorage.getItem("admin-role") || "Administrator";
+
+  const modalHtml = `
+    <div class="modal-overlay" id="profileModalOverlay" style="display: grid; z-index: 3000;">
+      <div class="modal" style="max-width: 400px;">
+        <div class="modal-header">
+          <h2><i class="fa-solid fa-circle-user"></i> Edit Profile</h2>
+          <button class="modal-close" onclick="document.getElementById('profileModalOverlay').remove()">&times;</button>
+        </div>
+        <div class="modal-form">
+          <div style="text-align: center; margin-bottom: 16px;">
+            <div style="width: 72px; height: 72px; background: var(--accent-subtle); color: var(--accent); border-radius: 50%; display: grid; place-items: center; font-size: 32px; margin: 0 auto 12px;">
+              <i class="fa-solid fa-user-doctor"></i>
+            </div>
+            <p style="font-size: 13px; color: var(--muted);">Profile details shown across the workspace</p>
+          </div>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="editProfileName" value="${currentName}" />
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <input type="text" id="editProfileRole" value="${currentRole}" />
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" onclick="document.getElementById('profileModalOverlay').remove()">Cancel</button>
+            <button class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  document.getElementById("saveProfileBtn").addEventListener("click", () => {
+    const newName = document.getElementById("editProfileName").value.trim();
+    const newRole = document.getElementById("editProfileRole").value.trim();
+    if (newName && newRole) {
+      setDoctorName(newName, newRole);
+      showToast("Profile updated successfully!");
+      document.getElementById('profileModalOverlay').remove();
+    }
+  });
+}
+
 function initDoctorName() {
   const savedName = localStorage.getItem("doctor-name") || "Dr. Priya S.";
-  applyDoctorName(savedName);
+  const savedRole = localStorage.getItem("admin-role") || "Administrator";
+  applyDoctorName(savedName, savedRole);
+
+  // Bind 'My Profile' links to open the modal
+  const profileLinks = document.querySelectorAll('a[href="#"]');
+  profileLinks.forEach(link => {
+    if (link.textContent.includes("My Profile")) {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        showProfileModal();
+      });
+    }
+  });
 }
 
 // ── AVAILABLE DOCTORS MANAGEMENT ─────────────────────────────
@@ -2001,11 +2206,10 @@ function initLoginPage() {
 
 async function getBackendPatients() {
   const token = localStorage.getItem("token");
-  if (!token) return [];
   try {
-    const response = await fetch(`${API_URL}/patients`, {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const response = await fetch(`${API_URL}/patients`, { headers });
     if (response.ok) return await response.json();
   } catch (err) {
     console.error("Backend error:", err);
@@ -2015,16 +2219,97 @@ async function getBackendPatients() {
 
 async function getBackendAppointments() {
   const token = localStorage.getItem("token");
-  if (!token) return [];
   try {
-    const response = await fetch(`${API_URL}/appointments`, {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const response = await fetch(`${API_URL}/appointments`, { headers });
     if (response.ok) return await response.json();
   } catch (err) {
     console.error("Appointments Fetch Error:", err);
   }
   return [];
+}
+
+async function getBackendBilling() {
+  const token = localStorage.getItem("token");
+  try {
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const response = await fetch(`${API_URL}/billing`, { headers });
+    if (response.ok) return await response.json();
+  } catch (err) {
+    console.error("Billing Fetch Error:", err);
+  }
+  return [];
+}
+
+// ── CASE SHEET SUBMISSION (register.html) ─────────────────────
+async function submitCaseSheet() {
+  const form = document.getElementById('caseSheetForm');
+  if (!form) return;
+
+  // Validate required fields
+  const name = document.getElementById('fullName')?.value.trim();
+  const phone = document.getElementById('phone')?.value.trim();
+  const gender = document.getElementById('gender')?.value;
+  const complaints = document.getElementById('complaints')?.value.trim();
+
+  if (!name) { showToast('Full Name is required.', 'error'); return; }
+  if (!gender) { showToast('Gender is required.', 'error'); return; }
+  if (!phone) { showToast('Phone number is required.', 'error'); return; }
+  if (!complaints) { showToast('Chief Complaints are required.', 'error'); return; }
+
+  // Generate a unique patient ID if not already set
+  let regNo = document.getElementById('regNo')?.value.trim();
+  if (!regNo || regNo === '') {
+    regNo = 'P-' + (Math.floor(Math.random() * 90000) + 10000);
+  }
+
+  const patientData = {
+    id: regNo,
+    name: name,
+    age: document.getElementById('age')?.value || '',
+    gender: gender,
+    phone: phone,
+    email: '',
+    address: document.getElementById('address')?.value.trim() || '',
+    occupation: document.getElementById('occupation')?.value.trim() || '',
+    complaints: complaints
+  };
+
+  const submitBtn = document.querySelector('.sticky-footer .btn-primary');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/patients`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patientData)
+    });
+
+    if (response.ok) {
+      // Clear the draft from localStorage
+      localStorage.removeItem('homeo_case_sheet_draft');
+      showToast(`Patient "${name}" registered successfully!`);
+      setTimeout(() => { window.location.href = 'patients.html'; }, 1500);
+    } else {
+      const errData = await response.json();
+      showToast(errData.error || 'Failed to register patient.', 'error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Case Sheet';
+      }
+    }
+  } catch (err) {
+    showToast('Could not reach the server. Is the backend running?', 'error');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Case Sheet';
+    }
+  }
 }
 
 // MAIN STARTUP LOGIC
@@ -2035,7 +2320,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   // 1. Initialize UI
   initTheme();
-  initThemeToggleBtn();
   initNotificationPanel();
   initClinicName();
   initDoctorName();
@@ -2059,29 +2343,58 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   console.log("All UI modules initialized.");
 
-  // 2. Fetch Data if on specific pages
-  if (document.getElementById("patientsTable")) {
-    const data = await getBackendPatients();
-    if (data.length > 0) renderPatients(data);
-    else renderPatients(PATIENTS);
+  // 2. Load patients from backend (for both dashboard sidebar and patients page)
+  const backendPatients = await getBackendPatients();
+  if (backendPatients.length > 0) {
+    // Populate global PATIENTS array with backend data
+    PATIENTS.length = 0;
+    
+    // Also reset and calculate dashboard stats
+    PATIENT_DATA.total = backendPatients.length;
+    PATIENT_DATA.new = 0;
+    PATIENT_DATA.repeat = 0;
+    PATIENT_DATA.old = 0;
+
+    const colors = ['#60a5fa','#34d399','#f59e0b','#a78bfa','#f87171','#38bdf8','#fb923c'];
+    backendPatients.forEach((p, i) => {
+      const tagValue = p.tag || 'new';
+      PATIENTS.push({
+        id: p.id,
+        name: p.name,
+        age: p.age || '—',
+        condition: p.complaints || '—',
+        color: colors[i % colors.length],
+        tag: tagValue
+      });
+      
+      if (tagValue === 'new') PATIENT_DATA.new++;
+      else if (tagValue === 'repeat') PATIENT_DATA.repeat++;
+      else PATIENT_DATA.old++;
+    });
   }
 
+  // 3. Render patients table (patients.html page)
+  if (document.getElementById("allPatientsTable")) {
+    renderAllPatients(PATIENTS);
+  }
+
+  // 4. Load appointments from backend
   if (document.getElementById("appointmentsBody")) {
     const apts = await getBackendAppointments();
     if (apts.length > 0) {
-      renderAppointments("all", apts.map(a => ({ ...a, name: a.patient_name || a.name })));
-    } else {
-      renderAppointments("all");
+      APPOINTMENTS.length = 0;
+      apts.forEach(a => APPOINTMENTS.push({ ...a, name: a.patient_name || a.name }));
     }
+    renderAppointments("all");
   }
 
-  // 3. Final Renderings
+  // 5. Final Renderings
   if (document.getElementById("appointmentsCalendar")?.style.display !== "none") {
     renderCalendar();
   }
   
   renderPastAppointments();
-  renderAllPatients();
+  renderPatients();
   renderMedicines();
   renderFollowups();
   renderChart(currentPeriod);

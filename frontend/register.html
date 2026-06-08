@@ -424,18 +424,18 @@
               <div class="form-group"><label>Bowels</label><input type="text" name="pg_bowels" /></div>
               <div class="form-group"><label>Bladder</label><input type="text" name="pg_bladder" /></div>
               <div class="form-group"><label>Perspiration</label><input type="text" name="pg_perspiration" /></div>
-              <div class="form-group"><label>Thermal Reaction</label>
-                <select name="pg_thermal">
-                  <option value="">Select</option>
-                  <option>Chilly</option><option>Hot</option><option>Ambithermal</option>
-                </select>
-              </div>
+              <div class="form-group"><label>Thermal Reaction</label><input type="text" name="pg_thermal" placeholder="e.g. Chilly, Hot, Ambithermal" /></div>
               <div class="form-group"><label>Sleep</label><input type="text" name="pg_sleep" /></div>
               <div class="form-group"><label>Dreams</label><input type="text" name="pg_dreams" /></div>
               <div class="form-group"><label>Desires</label><input type="text" name="pg_desires" /></div>
               <div class="form-group"><label>Aversion</label><input type="text" name="pg_aversion" /></div>
               <div class="form-group"><label>Intolerance</label><input type="text" name="pg_intolerance" /></div>
-              <div class="form-group" style="grid-column: 1/-1"><label>Menstrual / Obstetric / Sexual History</label><textarea rows="2" name="pg_sexual"></textarea></div>
+              <div class="form-group" style="grid-column: 1/-1"><label>Menstrual / Obstetric History</label><textarea rows="2" name="pg_menstrual" placeholder="LMP, cycle details, obstetric history..."></textarea></div>
+              <div class="form-group" style="grid-column: 1/-1"><label>Sexual History</label><textarea rows="2" name="pg_sexual" placeholder="Sexual history details..."></textarea></div>
+              <div class="form-group" style="grid-column: 1/-1">
+                <label style="font-weight: 700; color: var(--accent); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Habits / Addictions</label>
+                <textarea rows="3" name="pg_habits" placeholder="Describe any habits or addictions (e.g. tobacco, alcohol, coffee, etc.)..."></textarea>
+              </div>
             </div>
           </div>
         </div>
@@ -461,7 +461,7 @@
         <!-- SECTION 9: Physical Characteristics -->
         <div class="form-section-wrapper">
           <div class="collapsible-header" onclick="toggleSection(this)">
-            <h3><i class="fa-solid fa-stethoscope"></i> 9. Physical Characteristics</h3>
+            <h3><i class="fa-solid fa-stethoscope"></i> 9. General Physical Examination</h3>
             <i class="fa-solid fa-chevron-down collapsible-icon"></i>
           </div>
           <div class="collapsible-content">
@@ -478,10 +478,19 @@
               <div class="form-group"><label>Jaundice / Icterus</label><select name="pc_jaundice"><option>Absent</option><option>Present</option></select></div>
               <div class="form-group"><label>Oedema</label><select name="pc_oedema"><option>Absent</option><option>Present</option></select></div>
               <div class="form-group"><label>Vertigo / Headache</label><input type="text" name="pc_headache" /></div>
-              <div class="form-group"><label>Vision / Hearing</label><input type="text" name="pc_senses" /></div>
               <div class="form-group"><label>Skin</label><input type="text" name="pc_skin" /></div>
               <div class="form-group"><label>Hair & Nails</label><input type="text" name="pc_hair" /></div>
-              <div class="form-group"><label>Character of Pain</label><input type="text" name="pc_pain" /></div>
+            </div>
+
+            <!-- HEENT Subsection -->
+            <div style="margin-top: 24px; margin-bottom: 12px; font-weight: 700; color: var(--accent); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">HEENT (Head, Eyes, Ears, Nose, Throat)</div>
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+              <div class="form-group"><label>Head</label><input type="text" name="heent_head" placeholder="e.g. normocephalic, atraumatic" /></div>
+              <div class="form-group"><label>Eyes</label><input type="text" name="heent_eyes" placeholder="e.g. PERRL, sclera clear" /></div>
+              <div class="form-group"><label>Ears</label><input type="text" name="heent_ears" placeholder="e.g. TMs intact, no discharge" /></div>
+              <div class="form-group"><label>Nose</label><input type="text" name="heent_nose" placeholder="e.g. no congestion, septum midline" /></div>
+              <div class="form-group"><label>Throat</label><input type="text" name="heent_throat" placeholder="e.g. tonsils normal, no erythema" /></div>
+              <div class="form-group"><label>Additional HEENT Notes</label><input type="text" name="heent_notes" placeholder="Any other findings..." /></div>
             </div>
           </div>
         </div>
@@ -755,13 +764,15 @@
       form.querySelector('[name="pg_bowels"]').value = "Regular, once daily, soft stool.";
       form.querySelector('[name="pg_bladder"]').value = "Clear, 4-5 times a day, no pain.";
       form.querySelector('[name="pg_perspiration"]').value = "Profuse on forehead and palms during stress.";
-      form.querySelector('[name="pg_thermal"]').value = "Chilly";
+      form.querySelector('[name="pg_thermal"]').value = "Chilly - worse in cold weather";
       form.querySelector('[name="pg_sleep"]').value = "Sound, 6-7 hours. Feels refreshed.";
       form.querySelector('[name="pg_dreams"]').value = "Dreams of regular daily activities and family.";
       form.querySelector('[name="pg_desires"]').value = "Sweet and warm foods.";
       form.querySelector('[name="pg_aversion"]').value = "Sour foods, cold milk.";
       form.querySelector('[name="pg_intolerance"]').value = "Eggplant";
-      form.querySelector('[name="pg_sexual"]').value = "LMP: 2 weeks ago, regular 28-day cycle. No dysmenorrhea.";
+      form.querySelector('[name="pg_menstrual"]').value = "LMP: 2 weeks ago, regular 28-day cycle. No dysmenorrhea. G2P2.";
+      form.querySelector('[name="pg_sexual"]').value = "Active, no complaints.";
+      form.querySelector('[name="pg_habits"]').value = "2 cups of tea daily. No tobacco, alcohol, or recreational drugs.";
 
       // Section 8: Mental Generals
       form.querySelector('[name="mg_stress"]').value = "Becomes anxious, talks excessively.";
@@ -781,10 +792,16 @@
       form.querySelector('[name="pc_jaundice"]').value = "Absent";
       form.querySelector('[name="pc_oedema"]').value = "Absent";
       form.querySelector('[name="pc_headache"]').value = "Occasional, frontal region.";
-      form.querySelector('[name="pc_senses"]').value = "Normal hearing, slight myopia in right eye.";
       form.querySelector('[name="pc_skin"]').value = "Dry skin, prone to mild eczema in winters.";
       form.querySelector('[name="pc_hair"]').value = "Thin hair texture.";
-      form.querySelector('[name="pc_pain"]').value = "Throbbing or aching character.";
+
+      // HEENT
+      form.querySelector('[name="heent_head"]').value = "Normocephalic, atraumatic.";
+      form.querySelector('[name="heent_eyes"]').value = "PERRL, sclera clear, mild myopia in right eye.";
+      form.querySelector('[name="heent_ears"]').value = "TMs intact bilaterally, no discharge, normal hearing.";
+      form.querySelector('[name="heent_nose"]').value = "No congestion, septum midline, no polyps.";
+      form.querySelector('[name="heent_throat"]').value = "Tonsils normal, no erythema or exudate.";
+      form.querySelector('[name="heent_notes"]').value = "";
 
       // Section 10: CNS
       form.querySelector('[name="cns_cranial"]').value = "Intact, normal pupillary light reflexes.";
@@ -875,6 +892,12 @@
       if (!document.getElementById('regDate').value) {
         document.getElementById('regDate').valueAsDate = new Date();
       }
+
+      // Auto-generate a registration number for new patients
+      const regNoField = document.getElementById('regNo');
+      if (regNoField && !regNoField.value) {
+        regNoField.value = 'P-' + (Math.floor(Math.random() * 90000) + 10000);
+      }
     }
 
     // Event Listeners for Auto-Save
@@ -912,16 +935,72 @@
       }
     }
 
-    function submitCaseSheet() {
-      if (form.checkValidity()) {
-        showToast("Case Sheet Saved successfully!");
-        localStorage.removeItem(DRAFT_KEY); // clear draft on success
-        setTimeout(() => {
-          window.location.href = 'patients.html';
-        }, 1500);
-      } else {
-        form.reportValidity();
-        showToast("Please fill in all mandatory fields.", "error");
+    async function submitCaseSheet() {
+      // Validate required fields
+      const name = document.getElementById('fullName')?.value.trim();
+      const phone = document.getElementById('phone')?.value.trim();
+      const gender = document.getElementById('gender')?.value;
+      const complaints = document.getElementById('complaints')?.value.trim();
+
+      if (!name) { showToast('Full Name is required.', 'error'); return; }
+      if (!gender) { showToast('Gender is required.', 'error'); return; }
+      if (!phone) { showToast('Phone number is required.', 'error'); return; }
+      if (!complaints) { showToast('Chief Complaints are required.', 'error'); return; }
+
+      let regNo = document.getElementById('regNo')?.value.trim();
+      if (!regNo) {
+        regNo = 'P-' + (Math.floor(Math.random() * 90000) + 10000);
+        document.getElementById('regNo').value = regNo;
+      }
+
+      const patientData = {
+        id: regNo,
+        name: name,
+        age: document.getElementById('age')?.value || '',
+        gender: gender,
+        phone: phone,
+        email: '',
+        address: document.getElementById('address')?.value.trim() || '',
+        occupation: document.getElementById('occupation')?.value.trim() || '',
+        complaints: complaints
+      };
+
+      const submitBtn = document.querySelector('.sticky-footer .btn-primary');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+      }
+
+      // Determine API URL (same logic as script.js)
+      const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000/api'
+        : 'https://homeo-clinic-patient-management.onrender.com/api';
+
+      try {
+        const response = await fetch(`${API_URL}/patients`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patientData)
+        });
+
+        if (response.ok) {
+          localStorage.removeItem(DRAFT_KEY);
+          showToast(`Patient "${name}" registered successfully!`);
+          setTimeout(() => { window.location.href = 'patients.html'; }, 1500);
+        } else {
+          const errData = await response.json();
+          showToast(errData.error || 'Failed to register patient.', 'error');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Case Sheet';
+          }
+        }
+      } catch (err) {
+        showToast('Could not reach the server. Is the backend running?', 'error');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Case Sheet';
+        }
       }
     }
 

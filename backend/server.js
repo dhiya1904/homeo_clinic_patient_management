@@ -74,7 +74,7 @@ app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
 
 // --- PATIENT ROUTES ---
 
-app.get('/api/patients', authenticateToken, async (req, res) => {
+app.get('/api/patients', async (req, res) => {
   try {
     const patients = await db.all('SELECT * FROM patients ORDER BY registration_date DESC');
     res.json(patients);
@@ -98,7 +98,7 @@ app.post('/api/patients', async (req, res) => {
 
 // --- APPOINTMENTS ROUTES ---
 
-app.get('/api/appointments', authenticateToken, async (req, res) => {
+app.get('/api/appointments', async (req, res) => {
   try {
     const appointments = await db.all(`
       SELECT a.*, p.name as patient_name 
@@ -137,6 +137,15 @@ app.post('/api/billing', authenticateToken, async (req, res) => {
     res.status(201).json({ message: 'Invoice saved successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to save invoice' });
+  }
+});
+
+app.get('/api/billing', authenticateToken, async (req, res) => {
+  try {
+    const bills = await db.all('SELECT * FROM billing ORDER BY date DESC');
+    res.json(bills);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch billing records' });
   }
 });
 

@@ -120,11 +120,19 @@
           <span class="notif-dot"></span>
         </button>
 
-        <div class="admin-profile" id="adminProfile" tabindex="0">
+        <div class="admin-profile" id="adminProfile" tabindex="0" aria-haspopup="true" aria-expanded="false">
           <div class="admin-avatar"><i class="fa-solid fa-user-doctor"></i></div>
           <div class="admin-info">
             <span class="admin-name">Dr. Priya S.</span>
             <span class="admin-role">Administrator</span>
+          </div>
+          <i class="fa-solid fa-chevron-down dropdown-caret"></i>
+          <div class="admin-dropdown" id="adminDropdown" role="menu">
+            <a href="#" role="menuitem"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+            <a href="#" role="menuitem"><i class="fa-solid fa-key"></i> Change Password</a>
+            <a href="settings.html" role="menuitem"><i class="fa-solid fa-gear"></i> Settings</a>
+            <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+            <a href="login.html" role="menuitem" style="color: var(--rose)"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
           </div>
         </div>
       </div>

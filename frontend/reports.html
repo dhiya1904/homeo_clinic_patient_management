@@ -127,6 +127,13 @@
             <span class="admin-role">Administrator</span>
           </div>
           <i class="fa-solid fa-chevron-down dropdown-caret"></i>
+          <div class="admin-dropdown" id="adminDropdown" role="menu">
+            <a href="#" role="menuitem"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+            <a href="#" role="menuitem"><i class="fa-solid fa-key"></i> Change Password</a>
+            <a href="settings.html" role="menuitem"><i class="fa-solid fa-gear"></i> Settings</a>
+            <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+            <a href="login.html" role="menuitem" style="color: var(--rose)"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+          </div>
         </div>
       </div>
     </header>
@@ -139,33 +146,29 @@
         <div class="stat-card">
           <div class="stat-header">
             <span class="stat-icon" style="background:rgba(96, 165, 250, 0.1);color:var(--accent)"><i class="fa-solid fa-indian-rupee-sign"></i></span>
-            <span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> 12%</span>
           </div>
-          <div class="stat-value" data-target="84500" data-prefix="₹">₹0</div>
-          <div class="stat-label">Total Revenue (May)</div>
+          <div class="stat-value" id="reportTotalRevenue">₹0</div>
+          <div class="stat-label">Total Revenue (This Month)</div>
         </div>
         <div class="stat-card">
           <div class="stat-header">
             <span class="stat-icon" style="background:rgba(16, 185, 129, 0.1);color:#10b981"><i class="fa-solid fa-users"></i></span>
-            <span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> 8%</span>
           </div>
-          <div class="stat-value" data-target="190">0</div>
+          <div class="stat-value" id="reportTotalPatients">0</div>
           <div class="stat-label">Total Patients</div>
         </div>
         <div class="stat-card">
           <div class="stat-header">
             <span class="stat-icon" style="background:rgba(245, 158, 11, 0.1);color:#f59e0b"><i class="fa-solid fa-calendar-check"></i></span>
-            <span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> 15%</span>
           </div>
-          <div class="stat-value" data-target="210">0</div>
+          <div class="stat-value" id="reportTotalApts">0</div>
           <div class="stat-label">Total Appointments</div>
         </div>
         <div class="stat-card">
           <div class="stat-header">
             <span class="stat-icon" style="background:rgba(239, 68, 68, 0.1);color:#ef4444"><i class="fa-solid fa-circle-xmark"></i></span>
-            <span class="stat-trend down"><i class="fa-solid fa-arrow-down"></i> 3%</span>
           </div>
-          <div class="stat-value" data-target="14">0</div>
+          <div class="stat-value" id="reportCancellations">0</div>
           <div class="stat-label">Cancellations</div>
         </div>
       </div>
