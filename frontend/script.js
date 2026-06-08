@@ -2312,6 +2312,202 @@ async function submitCaseSheet() {
   }
 }
 
+// ── QUICK ACTIONS ─────────────────────────────────────────────
+function initQuickActions() {
+  // Communications button → navigate to communications page
+  const commBtn = document.getElementById('qa-communications');
+  if (commBtn) {
+    commBtn.addEventListener('click', () => {
+      window.location.href = 'communications.html';
+    });
+  }
+
+  // Book Appointment quick action → open modal
+  const bookAptBtn = document.getElementById('qa-book-apt');
+  if (bookAptBtn) {
+    bookAptBtn.addEventListener('click', () => {
+      const overlay = document.getElementById('modalOverlay');
+      if (overlay) {
+        overlay.hidden = false;
+        overlay.classList.add('active');
+      }
+    });
+  }
+
+  // Generate Bill quick action → navigate to billing
+  const billingBtn = document.getElementById('qa-billing');
+  if (billingBtn) {
+    billingBtn.addEventListener('click', () => {
+      window.location.href = 'billing.html';
+    });
+  }
+}
+
+// ── COMMUNICATIONS PAGE ────────────────────────────────────────
+function initCommunicationsPage() {
+  const msgBody     = document.getElementById('msgBody');
+  const charCount   = document.getElementById('charCount');
+  const previewBox  = document.getElementById('previewBox');
+  const sendBtn     = document.getElementById('sendMsgBtn');
+  const patSearch   = document.getElementById('patientSearch');
+  const patListBox  = document.getElementById('patientListBox');
+  const recipMode   = document.getElementById('recipMode');
+  const templateList = document.getElementById('templateList');
+
+  if (!msgBody) return; // Not on communications page
+
+  const MAX_CHARS = 500;
+
+  // ── Mock patient list (pulls from PATIENTS if available)
+  const mockPatients = PATIENTS.length > 0 ? PATIENTS : [
+    { id: 1, name: 'Anita Sharma' },
+    { id: 2, name: 'Ravi Kumar' },
+    { id: 3, name: 'Meera Pillai' },
+    { id: 4, name: 'Suresh Nair' },
+    { id: 5, name: 'Kavitha Rao' },
+  ];
+
+  let selectedPatients = new Set();
+
+  function renderPatientList(filter = '') {
+    if (!patListBox) return;
+    const mode = recipMode ? recipMode.value : 'individual';
+    if (mode === 'all') {
+      patListBox.innerHTML = '<p style="color:var(--text-muted);padding:4px;">All patients selected</p>';
+      selectedPatients = new Set(mockPatients.map(p => p.id));
+      return;
+    }
+    const filtered = mockPatients.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+    patListBox.innerHTML = filtered.map(p => `
+      <label style="display:flex;align-items:center;gap:6px;padding:4px 2px;cursor:pointer;color:var(--text);">
+        <input type="${mode === 'individual' ? 'radio' : 'checkbox'}" name="selectedPat" value="${p.id}">
+        ${p.name}
+      </label>
+    `).join('') || '<p style="color:var(--text-muted);padding:4px;">No patients found</p>';
+
+    patListBox.querySelectorAll('input[name="selectedPat"]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        if (mode === 'individual') {
+          selectedPatients.clear();
+          selectedPatients.add(parseInt(inp.value));
+        } else {
+          if (inp.checked) selectedPatients.add(parseInt(inp.value));
+          else selectedPatients.delete(parseInt(inp.value));
+        }
+      });
+    });
+  }
+
+  renderPatientList();
+
+  if (recipMode) {
+    recipMode.addEventListener('change', () => {
+      selectedPatients.clear();
+      renderPatientList(patSearch ? patSearch.value : '');
+    });
+  }
+
+  if (patSearch) {
+    patSearch.addEventListener('input', () => renderPatientList(patSearch.value));
+  }
+
+  // ── Character counter & live preview
+  function updatePreview() {
+    const text = msgBody.value;
+    if (charCount) {
+      const len = text.length;
+      charCount.textContent = `${len} / ${MAX_CHARS}`;
+      charCount.style.color = len > MAX_CHARS ? '#ef4444' : 'var(--text-muted)';
+    }
+    if (previewBox) {
+      previewBox.innerHTML = text
+        ? text.replace(/\n/g, '<br>')
+        : '<span style="color:var(--text-muted);font-style:italic;">Your message will appear here…</span>';
+    }
+  }
+
+  msgBody.addEventListener('input', updatePreview);
+  updatePreview();
+
+  // ── Template injection
+  if (templateList) {
+    templateList.querySelectorAll('li[data-text]').forEach(li => {
+      li.style.cssText = 'padding:6px 8px;cursor:pointer;border-radius:6px;margin-bottom:4px;background:var(--surface-2,#1a1a1a);color:var(--text);';
+      li.addEventListener('mouseenter', () => li.style.background = 'var(--accent-muted,#1e3a5f)');
+      li.addEventListener('mouseleave', () => li.style.background = 'var(--surface-2,#1a1a1a)');
+      li.addEventListener('click', () => {
+        msgBody.value = li.dataset.text;
+        updatePreview();
+        showToast('Template loaded', 'success');
+      });
+    });
+  }
+
+  // ── Send button
+  function getSelectedChannel() {
+    const ch = document.querySelector('input[name="channel"]:checked');
+    return ch ? ch.value : 'whatsapp';
+  }
+
+  function getRecipientLabel() {
+    const mode = recipMode ? recipMode.value : 'individual';
+    if (mode === 'all') return 'All Patients';
+    if (selectedPatients.size === 0) return '—';
+    const names = [...selectedPatients].map(id => {
+      const p = mockPatients.find(x => x.id === id);
+      return p ? p.name : id;
+    });
+    return names.join(', ');
+  }
+
+  function loadHistory() {
+    const tbody = document.querySelector('#commHistoryTable tbody');
+    if (!tbody) return;
+    const history = JSON.parse(localStorage.getItem('commHistory') || '[]');
+    if (history.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No messages sent yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = history.slice().reverse().map((entry, i) => `
+      <tr>
+        <td>${history.length - i}</td>
+        <td style="white-space:nowrap;">${entry.when}</td>
+        <td><span class="ch-badge ch-${entry.channel}">${entry.channel}</span></td>
+        <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${entry.recipients}">${entry.recipients}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${entry.message}">${entry.message}</td>
+      </tr>
+    `).join('');
+  }
+
+  if (sendBtn) {
+    sendBtn.addEventListener('click', () => {
+      const text = msgBody.value.trim();
+      if (!text) { showToast('Please type a message', 'error'); return; }
+      if (text.length > MAX_CHARS) { showToast(`Message too long (max ${MAX_CHARS} chars)`, 'error'); return; }
+      if (selectedPatients.size === 0 && (recipMode && recipMode.value !== 'all')) {
+        showToast('Please select at least one recipient', 'error'); return;
+      }
+
+      const channel = getSelectedChannel();
+      const recipients = getRecipientLabel();
+      const when = new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+
+      const history = JSON.parse(localStorage.getItem('commHistory') || '[]');
+      history.push({ when, channel, recipients, message: text });
+      localStorage.setItem('commHistory', JSON.stringify(history));
+
+      showToast(`Message sent via ${channel} to ${recipients}`, 'success');
+      msgBody.value = '';
+      updatePreview();
+      selectedPatients.clear();
+      renderPatientList();
+      loadHistory();
+    });
+  }
+
+  loadHistory();
+}
+
 // MAIN STARTUP LOGIC
 console.log("Jireh Homeopathy Script Loading...");
 
@@ -2340,6 +2536,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initSettingsPage();
   initCalendar();
   initLoginPage();
+  initCommunicationsPage();
 
   console.log("All UI modules initialized.");
 
