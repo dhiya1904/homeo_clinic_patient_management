@@ -1382,7 +1382,7 @@ function initNotificationPanel() {
   panel.id = "notifPanel";
   panel.style.cssText = `
     display: none; position: absolute; top: calc(100% + 12px); right: 0;
-    width: 340px; background: var(--card-bg); border: 1px solid var(--border);
+    width: 340px; background: var(--surface); border: 1px solid var(--border);
     border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.18);
     z-index: 9999; overflow: hidden; animation: fadeSlideDown 0.18s ease;
   `;
