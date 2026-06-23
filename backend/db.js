@@ -62,6 +62,17 @@ async function initDb() {
     )
   `);
 
+  // 5. Communications Table
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS communications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      channel TEXT NOT NULL,
+      recipients TEXT NOT NULL,
+      message TEXT NOT NULL,
+      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // Seed Admin User if not exists
   const admin = await db.get('SELECT * FROM users WHERE username = ?', ['admin']);
   if (!admin) {

@@ -2344,55 +2344,76 @@ function initQuickActions() {
 }
 
 // ── COMMUNICATIONS PAGE ────────────────────────────────────────
-function initCommunicationsPage() {
-  const msgBody     = document.getElementById('msgBody');
-  const charCount   = document.getElementById('charCount');
-  const previewBox  = document.getElementById('previewBox');
-  const sendBtn     = document.getElementById('sendMsgBtn');
-  const patSearch   = document.getElementById('patientSearch');
-  const patListBox  = document.getElementById('patientListBox');
-  const recipMode   = document.getElementById('recipMode');
+async function initCommunicationsPage() {
+  const msgBody      = document.getElementById('msgBody');
+  const charCount    = document.getElementById('charCount');
+  const previewBox   = document.getElementById('previewBox');
+  const sendBtn      = document.getElementById('sendMsgBtn');
+  const patSearch    = document.getElementById('patientSearch');
+  const patListBox   = document.getElementById('patientListBox');
+  const recipMode    = document.getElementById('recipMode');
   const templateList = document.getElementById('templateList');
 
   if (!msgBody) return; // Not on communications page
 
   const MAX_CHARS = 500;
+  const token = localStorage.getItem('token');
 
-  // ── Mock patient list (pulls from PATIENTS if available)
-  const mockPatients = PATIENTS.length > 0 ? PATIENTS : [
-    { id: 1, name: 'Anita Sharma' },
-    { id: 2, name: 'Ravi Kumar' },
-    { id: 3, name: 'Meera Pillai' },
-    { id: 4, name: 'Suresh Nair' },
-    { id: 5, name: 'Kavitha Rao' },
-  ];
-
+  // ── 1. Load real patients from backend
+  let allPatients = [];
   let selectedPatients = new Set();
 
+  patListBox.innerHTML = '<p style="color:var(--text-muted);padding:6px;">Loading patients…</p>';
+
+  try {
+    const res = await fetch(`${API_URL}/patients`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    });
+    if (res.ok) {
+      allPatients = await res.json();
+    }
+  } catch (e) {
+    console.error('Failed to load patients for Communications:', e);
+  }
+
+  // ── 2. Render patient list
   function renderPatientList(filter = '') {
     if (!patListBox) return;
     const mode = recipMode ? recipMode.value : 'individual';
+
     if (mode === 'all') {
-      patListBox.innerHTML = '<p style="color:var(--text-muted);padding:4px;">All patients selected</p>';
-      selectedPatients = new Set(mockPatients.map(p => p.id));
+      patListBox.innerHTML = '<p style="color:var(--text-muted);padding:6px;font-size:0.85rem;"><i class="fa-solid fa-check-circle" style="color:#22c55e;margin-right:6px;"></i>All patients will receive this message</p>';
+      selectedPatients = new Set(allPatients.map(p => p.id));
       return;
     }
-    const filtered = mockPatients.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+
+    if (allPatients.length === 0) {
+      patListBox.innerHTML = '<p style="color:var(--text-muted);padding:6px;font-size:0.85rem;">No patients registered yet. <a href="register.html" style="color:var(--accent);">Register one →</a></p>';
+      return;
+    }
+
+    const filtered = allPatients.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+    if (filtered.length === 0) {
+      patListBox.innerHTML = '<p style="color:var(--text-muted);padding:6px;font-size:0.85rem;">No patients found</p>';
+      return;
+    }
+
     patListBox.innerHTML = filtered.map(p => `
-      <label style="display:flex;align-items:center;gap:6px;padding:4px 2px;cursor:pointer;color:var(--text);">
-        <input type="${mode === 'individual' ? 'radio' : 'checkbox'}" name="selectedPat" value="${p.id}">
-        ${p.name}
+      <label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;color:var(--text);transition:background 0.15s;" onmouseenter="this.style.background='var(--surface-hover,#1e1e1e)'" onmouseleave="this.style.background='transparent'">
+        <input type="${mode === 'individual' ? 'radio' : 'checkbox'}" name="selectedPat" value="${p.id}" style="accent-color:var(--accent);">
+        <span style="flex:1;">${p.name}</span>
+        ${p.phone ? `<span style="font-size:0.75rem;color:var(--text-muted);">${p.phone}</span>` : ''}
       </label>
-    `).join('') || '<p style="color:var(--text-muted);padding:4px;">No patients found</p>';
+    `).join('');
 
     patListBox.querySelectorAll('input[name="selectedPat"]').forEach(inp => {
       inp.addEventListener('change', () => {
         if (mode === 'individual') {
           selectedPatients.clear();
-          selectedPatients.add(parseInt(inp.value));
+          selectedPatients.add(inp.value);
         } else {
-          if (inp.checked) selectedPatients.add(parseInt(inp.value));
-          else selectedPatients.delete(parseInt(inp.value));
+          if (inp.checked) selectedPatients.add(inp.value);
+          else selectedPatients.delete(inp.value);
         }
       });
     });
@@ -2411,7 +2432,7 @@ function initCommunicationsPage() {
     patSearch.addEventListener('input', () => renderPatientList(patSearch.value));
   }
 
-  // ── Character counter & live preview
+  // ── 3. Character counter & live preview
   function updatePreview() {
     const text = msgBody.value;
     if (charCount) {
@@ -2429,12 +2450,9 @@ function initCommunicationsPage() {
   msgBody.addEventListener('input', updatePreview);
   updatePreview();
 
-  // ── Template injection
+  // ── 4. Template injection
   if (templateList) {
     templateList.querySelectorAll('li[data-text]').forEach(li => {
-      li.style.cssText = 'padding:6px 8px;cursor:pointer;border-radius:6px;margin-bottom:4px;background:var(--surface-2,#1a1a1a);color:var(--text);';
-      li.addEventListener('mouseenter', () => li.style.background = 'var(--accent-muted,#1e3a5f)');
-      li.addEventListener('mouseleave', () => li.style.background = 'var(--surface-2,#1a1a1a)');
       li.addEventListener('click', () => {
         msgBody.value = li.dataset.text;
         updatePreview();
@@ -2443,7 +2461,7 @@ function initCommunicationsPage() {
     });
   }
 
-  // ── Send button
+  // ── 5. Helpers
   function getSelectedChannel() {
     const ch = document.querySelector('input[name="channel"]:checked');
     return ch ? ch.value : 'whatsapp';
@@ -2454,33 +2472,49 @@ function initCommunicationsPage() {
     if (mode === 'all') return 'All Patients';
     if (selectedPatients.size === 0) return '—';
     const names = [...selectedPatients].map(id => {
-      const p = mockPatients.find(x => x.id === id);
+      const p = allPatients.find(x => x.id === id);
       return p ? p.name : id;
     });
     return names.join(', ');
   }
 
-  function loadHistory() {
+  // ── 6. Load history from backend
+  async function loadHistory() {
     const tbody = document.querySelector('#commHistoryTable tbody');
     if (!tbody) return;
-    const history = JSON.parse(localStorage.getItem('commHistory') || '[]');
-    if (history.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No messages sent yet</td></tr>';
-      return;
+
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:12px;">Loading…</td></tr>';
+
+    try {
+      const res = await fetch(`${API_URL}/communications`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      if (!res.ok) throw new Error('Failed');
+      const logs = await res.json();
+
+      if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:16px;">No messages sent yet</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = logs.map((entry, i) => {
+        const when = new Date(entry.sent_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+        return `<tr>
+          <td>${i + 1}</td>
+          <td style="white-space:nowrap;">${when}</td>
+          <td><span class="ch-badge ch-${entry.channel}">${entry.channel}</span></td>
+          <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${entry.recipients}">${entry.recipients}</td>
+          <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${entry.message}">${entry.message}</td>
+        </tr>`;
+      }).join('');
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:16px;">Could not load history — is the server running?</td></tr>';
     }
-    tbody.innerHTML = history.slice().reverse().map((entry, i) => `
-      <tr>
-        <td>${history.length - i}</td>
-        <td style="white-space:nowrap;">${entry.when}</td>
-        <td><span class="ch-badge ch-${entry.channel}">${entry.channel}</span></td>
-        <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${entry.recipients}">${entry.recipients}</td>
-        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${entry.message}">${entry.message}</td>
-      </tr>
-    `).join('');
   }
 
+  // ── 7. Send button — POST to backend
   if (sendBtn) {
-    sendBtn.addEventListener('click', () => {
+    sendBtn.addEventListener('click', async () => {
       const text = msgBody.value.trim();
       if (!text) { showToast('Please type a message', 'error'); return; }
       if (text.length > MAX_CHARS) { showToast(`Message too long (max ${MAX_CHARS} chars)`, 'error'); return; }
@@ -2488,24 +2522,43 @@ function initCommunicationsPage() {
         showToast('Please select at least one recipient', 'error'); return;
       }
 
-      const channel = getSelectedChannel();
+      const channel    = getSelectedChannel();
       const recipients = getRecipientLabel();
-      const when = new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
 
-      const history = JSON.parse(localStorage.getItem('commHistory') || '[]');
-      history.push({ when, channel, recipients, message: text });
-      localStorage.setItem('commHistory', JSON.stringify(history));
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending…';
 
-      showToast(`Message sent via ${channel} to ${recipients}`, 'success');
-      msgBody.value = '';
-      updatePreview();
-      selectedPatients.clear();
-      renderPatientList();
-      loadHistory();
+      try {
+        const res = await fetch(`${API_URL}/communications`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ channel, recipients, message: text })
+        });
+
+        if (res.ok) {
+          showToast(`Message sent via ${channel} to ${recipients}`, 'success');
+          msgBody.value = '';
+          updatePreview();
+          selectedPatients.clear();
+          renderPatientList();
+          await loadHistory();
+        } else {
+          const err = await res.json();
+          showToast(err.error || 'Failed to send message', 'error');
+        }
+      } catch (e) {
+        showToast('Server not reachable. Is the backend running?', 'error');
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Message';
+      }
     });
   }
 
-  loadHistory();
+  await loadHistory();
 }
 
 // MAIN STARTUP LOGIC

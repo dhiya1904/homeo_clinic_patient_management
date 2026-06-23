@@ -149,6 +149,33 @@ app.get('/api/billing', authenticateToken, async (req, res) => {
   }
 });
 
+// --- COMMUNICATIONS ROUTES ---
+
+app.get('/api/communications', authenticateToken, async (req, res) => {
+  try {
+    const logs = await db.all('SELECT * FROM communications ORDER BY sent_at DESC LIMIT 100');
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch communication logs' });
+  }
+});
+
+app.post('/api/communications', authenticateToken, async (req, res) => {
+  const { channel, recipients, message } = req.body;
+  if (!channel || !recipients || !message) {
+    return res.status(400).json({ error: 'channel, recipients and message are required' });
+  }
+  try {
+    await db.run(
+      'INSERT INTO communications (channel, recipients, message) VALUES (?, ?, ?)',
+      [channel, recipients, message]
+    );
+    res.status(201).json({ message: 'Communication logged successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to log communication' });
+  }
+});
+
 // --- STATIC FILES (Moved to bottom) ---
 // We move this to the bottom so it doesn't "steal" requests from our API routes
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
