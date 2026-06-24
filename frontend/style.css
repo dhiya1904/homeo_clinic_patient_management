@@ -995,10 +995,10 @@ body {
    ===================================================== */
 .form-section-wrapper {
   background: var(--surface) !important;
-  border: 1px solid rgba(0,0,0,0.04) !important;
+  border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   margin-bottom: 24px !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
+  box-shadow: var(--shadow) !important;
   overflow: hidden;
 }
 
