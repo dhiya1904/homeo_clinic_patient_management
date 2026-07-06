@@ -232,7 +232,7 @@ function renderAllPatients(patientsData) {
   }).join("");
 }
 
-function openPatientProfile(id) {
+async function openPatientProfile(id) {
   const p = PATIENTS.find(pat => pat.id === id);
   if (!p) return;
 
@@ -257,29 +257,100 @@ function openPatientProfile(id) {
     csBtn.onclick = () => window.location.href = `register.html?id=${p.id}`;
   }
 
-  // Populate History (Mock)
+  // Populate History (Real Data from Backend)
   const historyList = document.getElementById("detHistory");
-  const prescriptions = MEDICINE_DATA.filter(m => m.patient === p.name);
-  
-  if (prescriptions.length === 0) {
-    historyList.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--muted)">No consultation history found for this patient.</div>';
-  } else {
-    historyList.innerHTML = prescriptions.map(presc => `
-      <div class="card" style="background:var(--bg); border:1px solid var(--border); padding:1rem">
-        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem">
-          <span style="font-weight:700; color:var(--accent)">${presc.start}</span>
-          <span class="badge badge-confirmed">Completed</span>
-        </div>
-        <p style="font-size:0.9rem; margin-bottom:0.8rem"><strong>Diagnosis:</strong> ${p.condition} - Patient reported improvement.</p>
-        <div style="background:var(--card); padding:0.8rem; border-radius:8px; border:1px solid var(--border)">
-          <div style="font-size:0.8rem; font-weight:600; color:var(--muted); margin-bottom:0.4rem">PRESCRIBED MEDICINE</div>
-          <div style="display:flex; justify-content:space-between">
-            <span style="font-weight:600">${presc.medicine}</span>
-            <span>${presc.dosage} | ${presc.frequency}</span>
+  historyList.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--muted)"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i>Loading consultation history...</div>';
+
+  try {
+    const allApts = await getBackendAppointments();
+    const allBills = await getBackendBilling();
+
+    const patientApts = allApts.filter(a => a.patient_id === p.id || a.name === p.name);
+    const patientBills = allBills.filter(b => b.patient_id === p.id);
+
+    // Combine into consultations list
+    const consultations = [];
+
+    patientApts.forEach(apt => {
+      consultations.push({
+        date: apt.date || 'Unknown Date',
+        type: 'Appointment',
+        title: `${apt.type || 'Consultation'} with ${apt.doctor || 'Doctor'}`,
+        doctor: apt.doctor || 'Dr. Priya S.',
+        status: apt.status || 'Confirmed',
+        medicines: []
+      });
+    });
+
+    patientBills.forEach(bill => {
+      let billDate = 'Unknown Date';
+      if (bill.date) {
+        billDate = new Date(bill.date).toISOString().split('T')[0];
+      }
+
+      let medicines = [];
+      try {
+        medicines = typeof bill.items_json === 'string' ? JSON.parse(bill.items_json) : bill.items_json;
+      } catch (e) {}
+
+      // Try to find matching appointment on same date
+      const matching = consultations.find(c => c.date === billDate);
+      if (matching) {
+        matching.medicines = medicines;
+        matching.amount = bill.total_amount;
+        matching.billId = bill.id;
+      } else {
+        consultations.push({
+          date: billDate,
+          type: 'Billing',
+          title: `Invoice Generated (${bill.id})`,
+          doctor: 'Dr. Priya S.',
+          status: 'Completed',
+          medicines: medicines,
+          amount: bill.total_amount,
+          billId: bill.id
+        });
+      }
+    });
+
+    // Sort by date descending
+    consultations.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (consultations.length === 0) {
+      historyList.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--muted)">No consultation history found for this patient.</div>';
+    } else {
+      historyList.innerHTML = consultations.map(c => {
+        let medHtml = '';
+        if (c.medicines && c.medicines.length > 0) {
+          medHtml = `
+            <div style="background:var(--card); padding:0.8rem; border-radius:8px; border:1px solid var(--border); margin-top: 0.8rem;">
+              <div style="font-size:0.8rem; font-weight:600; color:var(--muted); margin-bottom:0.4rem">PRESCRIBED MEDICINES</div>
+              ${c.medicines.map(m => `
+                <div style="display:flex; justify-content:space-between; margin-bottom: 0.2rem; font-size: 0.85rem;">
+                  <span style="font-weight:600">${m.name || m.medicine}</span>
+                  <span>Qty: ${m.quantity || 1} ${m.dosage ? `| ${m.dosage}` : ''}</span>
+                </div>
+              `).join("")}
+            </div>
+          `;
+        }
+
+        return `
+          <div class="card" style="background:var(--bg); border:1px solid var(--border); padding:1rem">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem">
+              <span style="font-weight:700; color:var(--accent)">${c.date}</span>
+              <span class="badge badge-${c.status.toLowerCase() === 'completed' || c.status.toLowerCase() === 'confirmed' ? 'confirmed' : 'pending'}">${c.status}</span>
+            </div>
+            <p style="font-size:0.9rem; margin-bottom:0.4rem"><strong>${c.title}</strong></p>
+            ${c.amount ? `<p style="font-size:0.85rem; color: var(--muted); margin: 0;">Total Amount: ₹${c.amount}</p>` : ''}
+            ${medHtml}
           </div>
-        </div>
-      </div>
-    `).join("");
+        `;
+      }).join("");
+    }
+  } catch (error) {
+    console.error("Error loading consultation history:", error);
+    historyList.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--muted)">Error loading consultation history from server.</div>';
   }
 
   overlay.hidden = false;
