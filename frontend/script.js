@@ -225,6 +225,7 @@ function renderAllPatients(patientsData) {
       <td>
         <button class="tbl-action" title="View Profile" onclick="openPatientProfile('${id}')"><i class="fa-solid fa-eye"></i></button>
         <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${id}'" style="color: var(--accent);"><i class="fa-solid fa-file-medical"></i></button>
+        <button class="tbl-action" title="Add Next Visit" onclick="window.location.href='register.html?id=${id}&newVisit=true'" style="color: #10b981;"><i class="fa-solid fa-notes-medical"></i></button>
         <button class="tbl-action" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
       </td>
     </tr>`;

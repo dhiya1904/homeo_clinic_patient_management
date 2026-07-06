@@ -87,12 +87,22 @@ app.post('/api/patients', async (req, res) => {
   const { id, name, age, gender, phone, email, address, occupation, complaints } = req.body;
   try {
     await db.run(
-      'INSERT INTO patients (id, name, age, gender, phone, email, address, occupation, complaints) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      `INSERT INTO patients (id, name, age, gender, phone, email, address, occupation, complaints) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET 
+       name=excluded.name, 
+       age=excluded.age, 
+       gender=excluded.gender, 
+       phone=excluded.phone, 
+       email=excluded.email, 
+       address=excluded.address, 
+       occupation=excluded.occupation, 
+       complaints=excluded.complaints`,
       [id, name, age, gender, phone, email, address, occupation, complaints]
     );
-    res.status(201).json({ message: 'Patient registered successfully' });
+    res.status(201).json({ message: 'Patient saved successfully' });
   } catch (err) {
-    res.status(400).json({ error: 'Failed to register patient. ID might already exist.' });
+    res.status(400).json({ error: 'Failed to save patient.' });
   }
 });
 

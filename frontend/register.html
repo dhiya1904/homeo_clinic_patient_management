@@ -663,13 +663,20 @@
       document.getElementById('saveStatus').innerText = 'Draft saved at ' + time;
     }
 
-    function loadPatientCaseSheet(id) {
-      // Find patient in PATIENTS
-      const p = PATIENTS.find(pat => pat.id === id);
+    async function loadPatientCaseSheet(id, isNewVisit) {
+      // Find patient in backend data to avoid async timing issues
+      const backendPatients = await getBackendPatients();
+      let p = backendPatients.find(pat => pat.id === id);
+      if (p) {
+        p.condition = p.complaints || '';
+        p.tag = p.tag || 'new';
+      } else {
+        p = PATIENTS.find(pat => pat.id === id);
+      }
       if (!p) return;
 
       // Update page title
-      document.querySelector('#pageTitle').innerText = `${p.name}'s Case Sheet`;
+      document.querySelector('#pageTitle').innerText = isNewVisit ? `New Visit for ${p.name}` : `${p.name}'s Case Sheet`;
       document.querySelector('.breadcrumb strong').innerText = p.name;
       
       // Populate fields
@@ -685,6 +692,14 @@
       document.getElementById('dietType').value = "Vegetarian";
       document.getElementById('phone').value = "+91 98456 12345";
       document.getElementById('address').value = "Greenwood Apartments, Flat 4B, MG Road, Bangalore";
+      if (isNewVisit) {
+        document.getElementById('saveStatus').innerText = 'New Visit Mode';
+        // Auto-generate a new ID or keep the same patient ID? 
+        // We'll keep the same patient ID, just don't prepopulate the clinical details.
+        document.getElementById('regDate').valueAsDate = new Date();
+        return;
+      }
+
       document.getElementById('provisionalDiag').value = p.condition;
       document.getElementById('finalDiag').value = p.condition;
 
@@ -910,11 +925,12 @@
     form.addEventListener('change', saveDraft);
 
     // Initial Load
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const patientId = urlParams.get('id');
+      const isNewVisit = urlParams.get('newVisit') === 'true';
       if (patientId) {
-        loadPatientCaseSheet(patientId);
+        await loadPatientCaseSheet(patientId, isNewVisit);
       } else {
         restoreDraft();
       }
