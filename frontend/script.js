@@ -136,7 +136,7 @@ function renderAppointments(filter = "all") {
   if (filter === "all") rows = APPOINTMENTS;
   else if (filter === "upcoming") rows = APPOINTMENTS.filter(a => a.status !== "cancelled" && a.status !== "completed");
   else rows = APPOINTMENTS.filter(a => a.status === filter);
-  tbody.innerHTML = rows.map((a, i) => `
+  tbody.innerHTML = DOMPurify.sanitize(rows.map((a, i) => `
     <tr>
       <td>${String(i + 1).padStart(2,"0")}</td>
       <td><strong>${a.name}</strong></td>
@@ -156,14 +156,14 @@ function renderAppointments(filter = "all") {
         <button class="tbl-action btn-edit-apt" title="Edit" aria-label="Edit ${a.name}" data-id="${a.id}"><i class="fa-solid fa-pen-to-square"></i></button>
         <button class="tbl-action btn-delete-apt" title="Delete" aria-label="Delete ${a.name}" data-id="${a.id}" style="color:#ef4444"><i class="fa-solid fa-trash"></i></button>
       </td>
-    </tr>`).join("");
+    </tr>`).join(""));
 }
 
 // ── PAST APPOINTMENTS TABLE ───────────────────────────────────
 function renderPastAppointments() {
   const tbody = document.getElementById("pastAppointmentsBody");
   if (!tbody) return;
-  tbody.innerHTML = PAST_APPOINTMENTS.map(a => `
+  tbody.innerHTML = DOMPurify.sanitize(PAST_APPOINTMENTS.map(a => `
     <tr>
       <td><span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--muted)">${a.date}</span></td>
       <td><strong>${a.name}</strong></td>
@@ -174,14 +174,14 @@ function renderPastAppointments() {
       <td>
         <button class="tbl-action" title="View"><i class="fa-solid fa-eye"></i></button>
       </td>
-    </tr>`).join("");
+    </tr>`).join(""));
 }
 
 // ── PATIENTS TABLE ──────────────────────────────────────────────
 function renderPatients() {
   const tbody = document.getElementById("patientList");
   if (!tbody) return;
-  tbody.innerHTML = PATIENTS.map(p => `
+  tbody.innerHTML = DOMPurify.sanitize(PATIENTS.map(p => `
     <li class="patient-item" role="listitem">
       <div class="patient-avatar" style="background:${p.color}">${getInitials(p.name)}</div>
       <div class="patient-info">
@@ -189,7 +189,7 @@ function renderPatients() {
         <div class="patient-meta">${p.age} yrs &nbsp;·&nbsp; ${p.condition}</div>
       </div>
       <span class="patient-tag tag-${p.tag}">${p.tag === "new" ? "New" : "Returning"}</span>
-    </li>`).join("");
+    </li>`).join(""));
 }
 
 // ── ALL PATIENTS TABLE (patients.html) ─────────────────────────
@@ -209,7 +209,7 @@ function renderAllPatients(patientsData) {
     return;
   }
 
-  tbody.innerHTML = data.map(p => {
+  tbody.innerHTML = DOMPurify.sanitize(data.map(p => {
     const color = p.color || '#60a5fa';
     const name = p.name || 'Unknown';
     const age = p.age || '—';
@@ -229,7 +229,7 @@ function renderAllPatients(patientsData) {
         <button class="tbl-action" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
       </td>
     </tr>`;
-  }).join("");
+  }).join(""));
 }
 
 async function openPatientProfile(id) {
@@ -243,9 +243,17 @@ async function openPatientProfile(id) {
   document.getElementById("detAvatar").textContent = getInitials(p.name);
   document.getElementById("detAvatar").style.background = p.color;
   document.getElementById("detName").textContent = p.name;
-  document.getElementById("detID").textContent = p.id;
-  document.getElementById("detAge").textContent = p.age + " Years";
-  document.getElementById("detCondition").textContent = p.condition;
+  // Show patient_code (PAT-000001) instead of raw UUID below the name
+  const codeEl = document.getElementById("detCode");
+  if (codeEl) codeEl.textContent = p.patient_code || (p.id ? p.id.slice(0, 8).toUpperCase() : "—");
+  document.getElementById("detAge").textContent = p.age ? p.age + " yrs" : "—";
+  const genderEl = document.getElementById("detGender");
+  if (genderEl) genderEl.textContent = p.gender || "—";
+  const phoneEl = document.getElementById("detPhone");
+  if (phoneEl) phoneEl.textContent = p.phone || "—";
+  // Use chief_complaints from new schema, with fallbacks for compatibility
+  const condEl = document.getElementById("detCondition");
+  if (condEl) condEl.textContent = p.chief_complaints || p.complaints || p.condition || "—";
 
   const billBtn = document.getElementById("detNewBillBtn");
   if (billBtn) {
@@ -267,6 +275,13 @@ async function openPatientProfile(id) {
 
     const patientApts = allApts.filter(a => a.patient_id === p.id || a.name === p.name);
     const patientBills = allBills.filter(b => b.patient_id === p.id);
+    let patientPrescriptions = [];
+    try {
+      const allPresc = await getBackendPrescriptions();
+      patientPrescriptions = allPresc.filter(pr => pr.patient_id === p.id);
+    } catch (e) {
+      console.error("Failed to load prescriptions", e);
+    }
 
     // Combine into consultations list
     const consultations = [];
@@ -278,7 +293,8 @@ async function openPatientProfile(id) {
         title: `${apt.type || 'Consultation'} with ${apt.doctor || 'Doctor'}`,
         doctor: apt.doctor || 'Dr. Priya S.',
         status: apt.status || 'Confirmed',
-        medicines: []
+        medicines: [],
+        advice: ''
       });
     });
 
@@ -296,7 +312,7 @@ async function openPatientProfile(id) {
       // Try to find matching appointment on same date
       const matching = consultations.find(c => c.date === billDate);
       if (matching) {
-        matching.medicines = medicines;
+        matching.medicines = matching.medicines.concat(medicines);
         matching.amount = bill.total_amount;
         matching.billId = bill.id;
       } else {
@@ -308,7 +324,30 @@ async function openPatientProfile(id) {
           status: 'Completed',
           medicines: medicines,
           amount: bill.total_amount,
-          billId: bill.id
+          billId: bill.id,
+          advice: ''
+        });
+      }
+    });
+
+    patientPrescriptions.forEach(presc => {
+      let prescDate = 'Unknown Date';
+      if (presc.created_at) {
+        prescDate = new Date(presc.created_at).toISOString().split('T')[0];
+      }
+
+      const matching = consultations.find(c => c.date === prescDate);
+      if (matching) {
+        if (presc.advice) matching.advice = presc.advice;
+      } else {
+        consultations.push({
+          date: prescDate,
+          type: 'Prescription',
+          title: `Prescription Generated`,
+          doctor: 'Dr. Priya S.',
+          status: 'Completed',
+          medicines: [],
+          advice: presc.advice || ''
         });
       }
     });
@@ -319,7 +358,7 @@ async function openPatientProfile(id) {
     if (consultations.length === 0) {
       historyList.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--muted)">No consultation history found for this patient.</div>';
     } else {
-      historyList.innerHTML = consultations.map(c => {
+      historyList.innerHTML = DOMPurify.sanitize(consultations.map(c => {
         let medHtml = '';
         if (c.medicines && c.medicines.length > 0) {
           medHtml = `
@@ -343,10 +382,11 @@ async function openPatientProfile(id) {
             </div>
             <p style="font-size:0.9rem; margin-bottom:0.4rem"><strong>${c.title}</strong></p>
             ${c.amount ? `<p style="font-size:0.85rem; color: var(--muted); margin: 0;">Total Amount: ₹${c.amount}</p>` : ''}
+            ${c.advice ? `<p style="font-size:0.85rem; color: var(--muted); margin: 0.2rem 0; padding: 0.5rem; background: var(--bg-accent, #f0fdfa); border-radius: 4px; border-left: 2px solid var(--accent)"><strong>Advice:</strong> ${c.advice}</p>` : ''}
             ${medHtml}
           </div>
         `;
-      }).join("");
+      }).join(""));
     }
   } catch (error) {
     console.error("Error loading consultation history:", error);
@@ -378,7 +418,7 @@ function renderFollowups() {
 function renderMedicines() {
   const tbody = document.getElementById("medicinesBody");
   if (!tbody) return;
-  tbody.innerHTML = MEDICINE_DATA.map((m, i) => `
+  tbody.innerHTML = DOMPurify.sanitize(MEDICINE_DATA.map((m, i) => `
     <tr>
       <td><strong>${m.patient}</strong></td>
       <td><span class="badge" style="background:rgba(96, 165, 250, 0.1);color:var(--accent);border:1px solid rgba(96, 165, 250, 0.2)">${m.medicine}</span></td>
@@ -390,7 +430,7 @@ function renderMedicines() {
         <button class="tbl-action btn-edit-presc" title="Edit Prescription" data-index="${i}"><i class="fa-solid fa-prescription"></i></button>
         <button class="tbl-action btn-toggle-presc" title="Update Status" data-index="${i}"><i class="fa-solid fa-arrows-rotate"></i></button>
       </td>
-    </tr>`).join("");
+    </tr>`).join(""));
 }
 
 // ── CHART ─────────────────────────────────────────────────────
@@ -710,28 +750,63 @@ function initModal() {
 
     if (!nameInput || !timeInput || !doctorInput || !typeInput) return;
 
-    const name = nameInput.value.trim();
+    const patient_id = nameInput.value;
+    const name = nameInput.options[nameInput.selectedIndex].text;
     const time = timeInput.value;
     const doctor = doctorInput.value;
     const type = typeInput.value;
 
-    if (!name || !time || !doctor || !type) {
+    if (!patient_id || !time || !doctor || !type) {
       showToast("Please fill all fields.", "error");
       return;
     }
 
-    // Add to data
-    APPOINTMENTS.unshift({ id: Date.now(), name, time, doctor, type, status: "pending" });
-    
-    // Update UI
-    const filterEl = document.getElementById("aptFilter");
-    renderAppointments(filterEl ? filterEl.value : "all");
-    renderAptStatusChart();
-    initCounters();
-    
-    overlay.hidden = true;
-    form.reset();
-    showToast(`Appointment for ${name} booked!`);
+    try {
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+      // Ensure we have today's date for this mock appointment creation if there's no date input,
+      // but ideally we should have a date input. For now, use today.
+      const date = new Date().toISOString().split('T')[0];
+
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/appointments`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          patient_id,
+          doctor,
+          date,
+          time,
+          type,
+          status: 'Scheduled'
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to save appointment');
+
+      // Add to local data for immediate UI update
+      APPOINTMENTS.unshift({ id: Date.now(), patient_id, name, date, time, doctor, type, status: "Scheduled" });
+      
+      // Update UI
+      const filterEl = document.getElementById("aptFilter");
+      renderAppointments(filterEl ? filterEl.value : "all");
+      renderAptStatusChart();
+      initCounters();
+      
+      overlay.hidden = true;
+      form.reset();
+      showToast(`Appointment for ${name} booked!`);
+    } catch (error) {
+      console.error(error);
+      showToast("Error booking appointment", "error");
+    } finally {
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) btn.innerHTML = 'Save Appointment';
+    }
   });
 }
 
@@ -914,7 +989,7 @@ function initSearch() {
       a.name.toLowerCase().includes(q) || a.doctor.toLowerCase().includes(q) || a.type.toLowerCase().includes(q)
     );
     const tbody = document.getElementById("appointmentsBody");
-    tbody.innerHTML = filtered.map((a, i) => `
+    tbody.innerHTML = DOMPurify.sanitize(filtered.map((a, i) => `
       <tr>
         <td>${String(i+1).padStart(2,"0")}</td>
         <td><strong>${a.name}</strong></td>
@@ -926,7 +1001,7 @@ function initSearch() {
           <button class="tbl-action"><i class="fa-solid fa-eye"></i></button>
           <button class="tbl-action"><i class="fa-solid fa-pen-to-square"></i></button>
         </td>
-      </tr>`).join("");
+      </tr>`).join(""));
   });
 }
 
@@ -1047,7 +1122,7 @@ function updateBillSummary() {
 function renderBillItems() {
   const tbody = document.getElementById("billItemsBody");
   if (!tbody) return;
-  tbody.innerHTML = CURRENT_BILL.medicines.map((m, i) => `
+  tbody.innerHTML = DOMPurify.sanitize(CURRENT_BILL.medicines.map((m, i) => `
     <tr>
       <td>${m.name}</td>
       <td>${m.quantity}</td>
@@ -1057,7 +1132,7 @@ function renderBillItems() {
         <button class="tbl-action" onclick="removeBillItem(${i})"><i class="fa-solid fa-trash"></i></button>
       </td>
     </tr>
-  `).join("");
+  `).join(""));
   if (CURRENT_BILL.medicines.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem italic">No medicines added</td></tr>';
   }
@@ -1170,7 +1245,7 @@ function renderReportTable() {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--muted); font-size: 14px;"><i class="fa-solid fa-folder-open" style="font-size: 20px; display: block; margin-bottom: 8px;"></i>No revenue records found yet.</td></tr>`;
     return;
   }
-  tbody.innerHTML = REPORT_DATA.map(r => `
+  tbody.innerHTML = DOMPurify.sanitize(REPORT_DATA.map(r => `
     <tr>
       <td><strong>${r.month} 2026</strong></td>
       <td style="color:var(--accent); font-weight:bold">₹${r.revenue.toLocaleString('en-IN')}</td>
@@ -1178,7 +1253,7 @@ function renderReportTable() {
       <td>${r.appts}</td>
       <td><span class="badge badge-confirmed">+0%</span></td>
     </tr>
-  `).join("");
+  `).join(""));
 }
 
 async function initReportsPage() {
@@ -2206,6 +2281,7 @@ function showAptDetailsModal(dateLabel, apts) {
           <td style="padding: 14px 16px; font-weight: 700; color: var(--text);">${a.name}</td>
           <td style="padding: 14px 16px; color: var(--text);">${a.doctor}</td>
           <td style="padding: 14px 16px;"><span class="badge" style="background: var(--sidebar-hover); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; color: var(--muted);">${a.type}</span></td>
+          <td style="padding: 14px 16px; color: var(--text); font-size: 12px;">${a.advice || '-'}</td>
           <td style="padding: 14px 16px;"><span class="status-indicator ${statusClass}" style="padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block;">${a.status}</span></td>
         </tr>
       `;
@@ -2356,9 +2432,13 @@ async function submitCaseSheet() {
   }
 
   try {
+    const token = localStorage.getItem("token");
     const response = await fetch(`${API_URL}/patients`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify(patientData)
     });
 
@@ -2682,9 +2762,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const tagValue = p.tag || 'new';
       PATIENTS.push({
         id: p.id,
+        patient_code: p.patient_code || null,
         name: p.name,
         age: p.age || '—',
-        condition: p.complaints || '—',
+        gender: p.gender || null,
+        phone: p.phone || null,
+        email: p.email || null,
+        address: p.address || null,
+        occupation: p.occupation || null,
+        chief_complaints: p.chief_complaints || p.complaints || null,
+        condition: p.chief_complaints || p.complaints || '—',
+        complaints: p.chief_complaints || p.complaints || '—',
         color: colors[i % colors.length],
         tag: tagValue
       });

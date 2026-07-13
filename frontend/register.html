@@ -600,6 +600,7 @@
 
   <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <script src="script.js"></script>
   <script>
     // Collapsible Logic
@@ -992,16 +993,58 @@
         ? 'http://localhost:5000/api'
         : 'https://homeo-clinic-patient-management.onrender.com/api';
 
+      const token = localStorage.getItem('token');
+      const authHeaders = { 
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
+
       try {
         const response = await fetch(`${API_URL}/patients`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify(patientData)
         });
 
         if (response.ok) {
+          const resData = await response.json();
+          const patientId = resData.patient.id; // Get the actual UUID from backend
+          
+          // 2. Create Appointment Record
+          const aptDate = document.getElementById('regDate')?.value || new Date().toISOString().split('T')[0];
+          const doctorName = document.querySelector('[name="fs_doctor"]')?.value || 'Dr. Priya S.';
+          
+          await fetch(`${API_URL}/appointments`, {
+            method: 'POST',
+            headers: authHeaders,
+            body: JSON.stringify({
+              patient_id: patientId,
+              doctor: doctorName,
+              date: aptDate,
+              time: '10:00', // Default time if not specified
+              type: 'Consultation',
+              status: 'Completed'
+            })
+          });
+
+          // 3. Create Prescription Record
+          const prescriptionText = document.querySelector('[name="fs_rx"]')?.value.trim();
+          if (prescriptionText) {
+            await fetch(`${API_URL}/prescriptions`, {
+              method: 'POST',
+              headers: authHeaders,
+              body: JSON.stringify({
+                patient_id: patientId,
+                symptoms_observed: complaints,
+                diagnosis: document.getElementById('finalDiag')?.value || document.getElementById('provisionalDiag')?.value || '',
+                advice: prescriptionText,
+                next_visit_date: document.querySelector('[name="fs_review"]')?.value || null
+              })
+            });
+          }
+
           localStorage.removeItem(DRAFT_KEY);
-          showToast(`Patient "${name}" registered successfully!`);
+          showToast(`Case Sheet for "${name}" saved successfully!`);
           setTimeout(() => { window.location.href = 'patients.html'; }, 1500);
         } else {
           const errData = await response.json();

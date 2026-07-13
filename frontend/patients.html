@@ -244,22 +244,26 @@
         <!-- Sidebar Info -->
         <div class="patient-sidebar" style="border-right: 1px solid var(--border); padding-right: 24px">
           <div id="detAvatar" style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 1rem; display: grid; place-items: center; font-size: 32px; color: #fff; font-weight: 800"></div>
-          <h3 id="detName" style="text-align: center; margin-bottom: 0.5rem"></h3>
-          <p id="detID" style="text-align: center; color: var(--accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 1.5rem"></p>
+          <h3 id="detName" style="text-align: center; margin-bottom: 0.3rem"></h3>
+          <p id="detCode" style="text-align: center; color: var(--accent); font-weight: 600; font-size: 0.85rem; margin-bottom: 1.5rem; letter-spacing: 0.05em"></p>
           
-          <div class="space-y-3" style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.9rem">
-            <div style="display: flex; justify-content: space-between">
-              <span style="color: var(--muted)">Age:</span>
-              <span id="detAge"></span>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.875rem">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem">
+              <span style="color: var(--muted); white-space: nowrap"><i class="fa-solid fa-cake-candles" style="margin-right:5px"></i>Age</span>
+              <span id="detAge" style="font-weight:600; text-align:right"></span>
             </div>
-            <div style="display: flex; justify-content: space-between">
-              <span style="color: var(--muted)">Gender:</span>
-              <span>Female</span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem">
+              <span style="color: var(--muted); white-space: nowrap"><i class="fa-solid fa-venus-mars" style="margin-right:5px"></i>Gender</span>
+              <span id="detGender" style="font-weight:600; text-align:right">—</span>
             </div>
-            <div style="display: flex; justify-content: space-between">
-              <span style="color: var(--muted)">Condition:</span>
-              <span id="detCondition" style="text-align: right"></span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem">
+              <span style="color: var(--muted); white-space: nowrap"><i class="fa-solid fa-phone" style="margin-right:5px"></i>Phone</span>
+              <span id="detPhone" style="font-weight:600; text-align:right">—</span>
             </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem">
+              <span style="color: var(--muted); white-space: nowrap"><i class="fa-solid fa-stethoscope" style="margin-right:5px"></i>Chief Complaints</span>
+            </div>
+            <p id="detCondition" style="font-size:0.82rem; color:var(--text); background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:0.6rem 0.8rem; margin:0; line-height:1.5"></p>
           </div>
           
           <button class="btn btn-primary" id="detNewBillBtn" style="width: 100%; margin-top: 2rem">
@@ -289,6 +293,7 @@
   <!-- ===== TOAST NOTIFICATION ===== -->
   <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

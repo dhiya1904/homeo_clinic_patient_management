@@ -3,13 +3,13 @@ const { createClient } = require('@supabase/supabase-js');
 const bcrypt = require('bcryptjs');
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('SUPABASE_URL and SUPABASE_KEY must be set in .env');
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in .env');
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function initDb() {
   console.log('Connecting to Supabase...');

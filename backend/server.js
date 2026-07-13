@@ -4,22 +4,64 @@ const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { supabase, initDb } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'homeocare-secret-key-2026';
 
-app.use(cors());
-app.use(express.json());
+// --- SECURITY: Enforce JWT_SECRET presence ---
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('FATAL ERROR: JWT_SECRET environment variable is not set.');
+  process.exit(1);
+}
 
-// --- SECURITY HEADERS ---
-app.use((req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;"
-  );
-  next();
+// --- CORS: Restrict to known origins ---
+const allowedOrigins = [
+  'http://localhost:5000',
+  'http://127.0.0.1:5000',
+  'https://homeo-clinic-patient-management.onrender.com'
+];
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (e.g. same-origin, Postman, server-to-server)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
+
+app.use(express.json({ limit: '1mb' }));
+
+// --- SECURITY HEADERS via Helmet ---
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+      imgSrc: ["'self'", "data:"]
+    }
+  }
+}));
+
+// --- RATE LIMITING ---
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: { error: 'Too many requests, please try again later.' }
+});
+app.use('/api/', apiLimiter);
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 login attempts per 15 min
+  message: { error: 'Too many login attempts, please try again later.' }
 });
 
 // --- JWT AUTHENTICATION MIDDLEWARE ---
@@ -39,7 +81,7 @@ const authenticateToken = (req, res, next) => {
 // ============================================================
 
 // POST /api/auth/login
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body;
   try {
     const { data: user, error } = await supabase
@@ -106,7 +148,7 @@ app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
 // ============================================================
 
 // GET /api/patients
-app.get('/api/patients', async (req, res) => {
+app.get('/api/patients', authenticateToken, async (req, res) => {
   try {
     const { data: patients, error } = await supabase
       .from('patients')
@@ -129,14 +171,21 @@ app.get('/api/patients', async (req, res) => {
   }
 });
 
-// GET /api/patients/:id
-app.get('/api/patients/:id', async (req, res) => {
+// GET /api/patients/:id  (supports UUID or legacy patient_code like P-65522)
+app.get('/api/patients/:id', authenticateToken, async (req, res) => {
   try {
-    const { data: patient, error } = await supabase
-      .from('patients')
-      .select('*')
-      .eq('id', req.params.id)
-      .single();
+    const lookupId = req.params.id;
+    let query;
+
+    // Check if the id looks like a UUID
+    if (isUUID(lookupId)) {
+      query = supabase.from('patients').select('*').eq('id', lookupId).single();
+    } else {
+      // Legacy ID — try matching as patient_code first, then as old id format
+      query = supabase.from('patients').select('*').eq('patient_code', lookupId).single();
+    }
+
+    const { data: patient, error } = await query;
 
     if (error || !patient) return res.status(404).json({ error: 'Patient not found.' });
 
@@ -147,8 +196,27 @@ app.get('/api/patients/:id', async (req, res) => {
   }
 });
 
-// POST /api/patients  (upsert — handles both create and update)
-app.post('/api/patients', async (req, res) => {
+// Helper: check if a string is a valid UUID v4
+function isUUID(str) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
+// Helper: resolve legacy patient code to UUID
+async function resolvePatientUUID(idOrCode) {
+  if (!idOrCode) return null;
+  if (isUUID(idOrCode)) return idOrCode;
+  
+  const { data } = await supabase
+    .from('patients')
+    .select('id')
+    .eq('patient_code', idOrCode)
+    .single();
+    
+  return data ? data.id : null;
+}
+
+// POST /api/patients  (handles both create and update)
+app.post('/api/patients', authenticateToken, async (req, res) => {
   // Accept both old `complaints` and new `chief_complaints` from frontend
   const {
     id,
@@ -167,14 +235,41 @@ app.post('/api/patients', async (req, res) => {
   const chiefComplaintsValue = chief_complaints || complaints || null;
 
   try {
-    // Generate patient_code automatically if not provided and no id given
+    // Resolve the real UUID if the frontend sent a legacy id like "P-65522"
+    let existingUUID = null;
+
+    if (id) {
+      if (isUUID(id)) {
+        // Frontend sent a valid UUID — use it directly
+        existingUUID = id;
+      } else {
+        // Frontend sent a legacy ID (e.g. "P-65522") — look up by patient_code
+        const { data: existing } = await supabase
+          .from('patients')
+          .select('id')
+          .eq('patient_code', id)
+          .single();
+
+        if (existing) {
+          existingUUID = existing.id;
+        }
+        // If not found, treat it as a new patient and use the legacy id as patient_code
+      }
+    }
+
+    // Generate patient_code automatically for new patients
     let generatedCode = patient_code;
-    if (!generatedCode && !id) {
-      const { count } = await supabase
-        .from('patients')
-        .select('*', { count: 'exact', head: true });
-      const nextNum = (count || 0) + 1;
-      generatedCode = `PAT-${String(nextNum).padStart(6, '0')}`;
+    if (!generatedCode && !existingUUID) {
+      // Use the legacy id as patient_code if it looks like one (e.g. "P-65522")
+      if (id && !isUUID(id)) {
+        generatedCode = id;
+      } else {
+        const { count } = await supabase
+          .from('patients')
+          .select('*', { count: 'exact', head: true });
+        const nextNum = (count || 0) + 1;
+        generatedCode = `PAT-${String(nextNum).padStart(6, '0')}`;
+      }
     }
 
     const payload = {
@@ -191,16 +286,16 @@ app.post('/api/patients', async (req, res) => {
 
     let result;
 
-    if (id) {
-      // Update existing patient
+    if (existingUUID) {
+      // Update existing patient using the resolved UUID
       result = await supabase
         .from('patients')
         .update(payload)
-        .eq('id', id)
+        .eq('id', existingUUID)
         .select()
         .single();
     } else {
-      // Insert new patient
+      // Insert new patient — let Supabase generate the UUID
       result = await supabase
         .from('patients')
         .insert([payload])
@@ -216,7 +311,7 @@ app.post('/api/patients', async (req, res) => {
     });
   } catch (err) {
     console.error('POST /api/patients error:', err);
-    res.status(400).json({ error: 'Failed to save patient. ' + (err.message || '') });
+    res.status(400).json({ error: 'Failed to save patient. Please check the provided data.' });
   }
 });
 
@@ -257,7 +352,7 @@ function normalizeStatus(status) {
 }
 
 // GET /api/appointments
-app.get('/api/appointments', async (req, res) => {
+app.get('/api/appointments', authenticateToken, async (req, res) => {
   try {
     const { data: appointments, error } = await supabase
       .from('appointments')
@@ -295,13 +390,18 @@ app.post('/api/appointments', authenticateToken, async (req, res) => {
   }
 
   try {
+    const resolvedPatientId = await resolvePatientUUID(patient_id);
+    if (!resolvedPatientId) {
+      return res.status(404).json({ error: 'Patient not found.' });
+    }
+
     const appointment_datetime = mergeDateTime(date, time);
     const follow_up_dt = follow_up_date ? new Date(follow_up_date).toISOString() : null;
 
     const { error } = await supabase
       .from('appointments')
       .insert([{
-        patient_id,
+        patient_id: resolvedPatientId,
         appointment_datetime,
         type: normalizeType(type),
         status: normalizeStatus(status),
@@ -316,7 +416,7 @@ app.post('/api/appointments', authenticateToken, async (req, res) => {
     res.status(201).json({ message: 'Appointment scheduled successfully.' });
   } catch (err) {
     console.error('POST /api/appointments error:', err);
-    res.status(500).json({ error: 'Failed to schedule appointment. ' + (err.message || '') });
+    res.status(500).json({ error: 'Failed to schedule appointment.' });
   }
 });
 
@@ -375,6 +475,11 @@ app.post('/api/billing', authenticateToken, async (req, res) => {
   const safeBillStatus = VALID_BILL_STATUSES.includes(status) ? status : 'Pending';
 
   try {
+    const resolvedPatientId = await resolvePatientUUID(patient_id);
+    if (!resolvedPatientId) {
+      return res.status(404).json({ error: 'Patient not found.' });
+    }
+
     const bill_number = await generateBillNumber();
 
     // 1. Insert into bills table
@@ -382,7 +487,7 @@ app.post('/api/billing', authenticateToken, async (req, res) => {
       .from('bills')
       .insert([{
         bill_number,
-        patient_id,
+        patient_id: resolvedPatientId,
         total_amount: parseFloat(total_amount),
         subtotal_amount: parseFloat(subtotal_amount || total_amount),
         discount_amount: parseFloat(discount_amount || 0),
@@ -419,7 +524,7 @@ app.post('/api/billing', authenticateToken, async (req, res) => {
     });
   } catch (err) {
     console.error('POST /api/billing error:', err);
-    res.status(500).json({ error: 'Failed to save invoice. ' + (err.message || '') });
+    res.status(500).json({ error: 'Failed to save invoice.' });
   }
 });
 
@@ -482,10 +587,15 @@ app.post('/api/prescriptions', authenticateToken, async (req, res) => {
   if (!patient_id) return res.status(400).json({ error: 'patient_id is required.' });
 
   try {
+    const resolvedPatientId = await resolvePatientUUID(patient_id);
+    if (!resolvedPatientId) {
+      return res.status(404).json({ error: 'Patient not found.' });
+    }
+
     const { data: prescription, error: prescError } = await supabase
       .from('prescriptions')
       .insert([{
-        patient_id,
+        patient_id: resolvedPatientId,
         appointment_id: appointment_id || null,
         symptoms_observed: symptoms_observed || null,
         diagnosis: diagnosis || null,
@@ -522,7 +632,7 @@ app.post('/api/prescriptions', authenticateToken, async (req, res) => {
     });
   } catch (err) {
     console.error('POST /api/prescriptions error:', err);
-    res.status(500).json({ error: 'Failed to save prescription. ' + (err.message || '') });
+    res.status(500).json({ error: 'Failed to save prescription.' });
   }
 });
 
@@ -588,6 +698,8 @@ app.post('/api/communications', authenticateToken, async (req, res) => {
   }
 
   try {
+    const resolvedPatientId = await resolvePatientUUID(patient_id);
+
     const { error } = await supabase
       .from('communications')
       .insert([{
@@ -595,7 +707,7 @@ app.post('/api/communications', authenticateToken, async (req, res) => {
         recipient_address: finalRecipient,
         message_content: finalMessage,
         subject: subject || null,
-        patient_id: patient_id || null,
+        patient_id: resolvedPatientId || null,
         status: 'Sent',
         sent_at: new Date().toISOString()
       }]);
