@@ -18,21 +18,10 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
-// --- CORS: Restrict to known origins ---
-const allowedOrigins = [
-  'http://localhost:5000',
-  'http://127.0.0.1:5000',
-  'https://homeo-clinic-patient-management.onrender.com'
-];
+// --- CORS: Allow request origins for web app and local testing ---
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (e.g. same-origin, Postman, server-to-server)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
+  origin: true,
+  credentials: true
 }));
 
 app.use(express.json({ limit: '1mb' }));
@@ -42,6 +31,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
+      connectSrc: ["'self'", "*", "http://localhost:*", "http://127.0.0.1:*", "https://homeo-clinic-patient-management.onrender.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
@@ -49,6 +39,7 @@ app.use(helmet({
     }
   }
 }));
+
 
 // --- RATE LIMITING ---
 const apiLimiter = rateLimit({

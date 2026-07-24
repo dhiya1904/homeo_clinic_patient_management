@@ -1008,54 +1008,71 @@
 
         if (response.ok) {
           const resData = await response.json();
-          const patientId = resData.patient.id; // Get the actual UUID from backend
+          const patientId = resData.patient ? resData.patient.id : null;
           
-          // 2. Create Appointment Record
-          const aptDate = document.getElementById('regDate')?.value || new Date().toISOString().split('T')[0];
-          const doctorName = document.querySelector('[name="fs_doctor"]')?.value || 'Dr. Priya S.';
-          
-          await fetch(`${API_URL}/appointments`, {
-            method: 'POST',
-            headers: authHeaders,
-            body: JSON.stringify({
-              patient_id: patientId,
-              doctor: doctorName,
-              date: aptDate,
-              time: '10:00', // Default time if not specified
-              type: 'Consultation',
-              status: 'Completed'
-            })
-          });
+          if (patientId) {
+            // 2. Create Appointment Record safely
+            try {
+              const aptDate = document.getElementById('regDate')?.value || new Date().toISOString().split('T')[0];
+              const doctorName = document.querySelector('[name="fs_doctor"]')?.value || 'Dr. Priya S.';
+              
+              await fetch(`${API_URL}/appointments`, {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({
+                  patient_id: patientId,
+                  doctor: doctorName,
+                  date: aptDate,
+                  time: '10:00',
+                  type: 'Consultation',
+                  status: 'Completed'
+                })
+              });
+            } catch (e) {
+              console.warn('Could not auto-create appointment record:', e);
+            }
 
-          // 3. Create Prescription Record
-          const prescriptionText = document.querySelector('[name="fs_rx"]')?.value.trim();
-          if (prescriptionText) {
-            await fetch(`${API_URL}/prescriptions`, {
-              method: 'POST',
-              headers: authHeaders,
-              body: JSON.stringify({
-                patient_id: patientId,
-                symptoms_observed: complaints,
-                diagnosis: document.getElementById('finalDiag')?.value || document.getElementById('provisionalDiag')?.value || '',
-                advice: prescriptionText,
-                next_visit_date: document.querySelector('[name="fs_review"]')?.value || null
-              })
-            });
+            // 3. Create Prescription Record safely
+            try {
+              const prescriptionText = document.querySelector('[name="fs_rx"]')?.value.trim();
+              if (prescriptionText) {
+                await fetch(`${API_URL}/prescriptions`, {
+                  method: 'POST',
+                  headers: authHeaders,
+                  body: JSON.stringify({
+                    patient_id: patientId,
+                    symptoms_observed: complaints,
+                    diagnosis: document.getElementById('finalDiag')?.value || document.getElementById('provisionalDiag')?.value || '',
+                    advice: prescriptionText,
+                    next_visit_date: document.querySelector('[name="fs_review"]')?.value || null
+                  })
+                });
+              }
+            } catch (e) {
+              console.warn('Could not auto-create prescription record:', e);
+            }
           }
 
           localStorage.removeItem(DRAFT_KEY);
           showToast(`Case Sheet for "${name}" saved successfully!`);
           setTimeout(() => { window.location.href = 'patients.html'; }, 1500);
         } else {
-          const errData = await response.json();
-          showToast(errData.error || 'Failed to register patient.', 'error');
+          let errMsg = 'Failed to register patient.';
+          try {
+            const errData = await response.json();
+            errMsg = errData.error || errMsg;
+          } catch (e) {
+            errMsg = `Server error (${response.status} ${response.statusText})`;
+          }
+          showToast(errMsg, 'error');
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Case Sheet';
           }
         }
       } catch (err) {
-        showToast('Could not reach the server. Is the backend running?', 'error');
+        console.error("submitCaseSheet network error:", err);
+        showToast('Could not reach the server: ' + (err.message || 'Is the backend running?'), 'error');
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Case Sheet';
