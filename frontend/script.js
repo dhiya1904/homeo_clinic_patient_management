@@ -2,6 +2,11 @@
    Jireh Homeopathy — Dashboard Script
    ============================================================ */
 
+if (typeof DOMPurify === 'undefined') {
+  console.warn("DOMPurify not loaded, providing a fallback.");
+  window.DOMPurify = { sanitize: (str) => str };
+}
+
 // ── DATA ──────────────────────────────────────────────────────
 const APPOINTMENTS = [];
 const PAST_APPOINTMENTS = [];
@@ -741,7 +746,7 @@ function initModal() {
     if (e.target === overlay) { overlay.hidden = true; form.reset(); }
   });
 
-  form.addEventListener("submit", e => {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
     const nameInput = document.getElementById("patientName");
     const timeInput = document.getElementById("aptTime");
