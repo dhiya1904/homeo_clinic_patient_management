@@ -421,22 +421,38 @@ function renderFollowups() {
 }
 
 // ── MEDICINES TABLE ───────────────────────────────────────────
-function renderMedicines() {
+async function renderMedicines() {
   const tbody = document.getElementById("medicinesBody");
   if (!tbody) return;
-  tbody.innerHTML = MEDICINE_DATA.map((m, i) => `
-    <tr>
-      <td><strong>${m.patient}</strong></td>
-      <td><span class="badge" style="background:rgba(96, 165, 250, 0.1);color:var(--accent);border:1px solid rgba(96, 165, 250, 0.2)">${m.medicine}</span></td>
-      <td>${m.dosage}</td>
-      <td>${m.frequency}</td>
-      <td><span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--muted)">${m.start}</span></td>
-      <td><span class="badge badge-${m.status === 'Running' ? 'confirmed' : 'completed'}">${m.status}</span></td>
+
+  const prescriptions = await getBackendPrescriptions();
+  if (prescriptions.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--muted)"><i class="fa-solid fa-file-prescription" style="font-size:2rem;margin-bottom:0.8rem;display:block;"></i>No prescriptions recorded yet.<br><a href="register.html" style="color:var(--accent);font-weight:600;">Register a patient case sheet →</a></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = prescriptions.map((p) => {
+    const patientName = p.patient_name || 'Unknown Patient';
+    const diag = p.diagnosis || p.symptoms_observed || 'General Homoeopathic Consultation';
+    const rx = p.advice || 'Remedy prescribed per case sheet totality';
+    const pDate = p.prescription_date ? new Date(p.prescription_date).toISOString().split('T')[0] : '—';
+    const rDate = p.next_visit_date || '—';
+    const patientId = p.patient_id || '';
+
+    return `<tr>
+      <td><strong style="color:var(--text)">${patientName}</strong></td>
+      <td><span style="font-size:13px; color:var(--text)">${diag}</span></td>
+      <td><div style="font-family:monospace; font-size:12px; color:var(--accent); max-width:300px; white-space:pre-wrap;">${rx}</div></td>
+      <td><span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--muted)">${pDate}</span></td>
+      <td><span class="badge" style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2)">${rDate}</span></td>
       <td>
-        <button class="tbl-action btn-edit-presc" title="Edit Prescription" data-index="${i}"><i class="fa-solid fa-prescription"></i></button>
-        <button class="tbl-action btn-toggle-presc" title="Update Status" data-index="${i}"><i class="fa-solid fa-arrows-rotate"></i></button>
+        <div class="tbl-actions-group">
+          <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${patientId}'" style="color:var(--accent);"><i class="fa-solid fa-file-medical"></i></button>
+          <button class="tbl-action" title="Print Prescription" onclick="window.location.href='register.html?id=${patientId}'"><i class="fa-solid fa-print"></i></button>
+        </div>
       </td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
 }
 
 // ── CHART ─────────────────────────────────────────────────────
@@ -1290,8 +1306,12 @@ async function initReportsPage() {
     const cancelEl = document.getElementById("reportCancellations");
     if (cancelEl) cancelEl.textContent = cancellations;
 
-    // 2.d. Total Revenue
-    const totalRevenue = bills.reduce((sum, b) => sum + (parseFloat(b.total_amount) || 0), 0);
+    // 2.d. Total Revenue (Combined from Billing Records & Patient Visits)
+    const billedRevenue = bills.reduce((sum, b) => sum + (parseFloat(b.total_amount) || parseFloat(b.subtotal_amount) || 0), 0);
+    const consultFee = parseFloat(localStorage.getItem("consultation-fee")) || 500;
+    const patientVisitRevenue = patients.length * consultFee;
+    const totalRevenue = Math.max(billedRevenue, patientVisitRevenue);
+    
     const revEl = document.getElementById("reportTotalRevenue");
     if (revEl) revEl.textContent = "₹" + Math.round(totalRevenue).toLocaleString("en-IN");
 
@@ -2408,6 +2428,19 @@ async function getBackendBilling() {
     if (response.ok) return await response.json();
   } catch (err) {
     console.error("Billing Fetch Error:", err);
+  }
+  return [];
+}
+
+async function getBackendPrescriptions() {
+  const token = localStorage.getItem("token");
+  try {
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const response = await fetch(`${API_URL}/prescriptions`, { headers });
+    if (response.ok) return await response.json();
+  } catch (err) {
+    console.error("Prescriptions Fetch Error:", err);
   }
   return [];
 }

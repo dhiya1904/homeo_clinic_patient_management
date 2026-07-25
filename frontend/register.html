@@ -59,7 +59,7 @@
         <li class="nav-item" role="none">
           <a href="medicines.html" class="nav-link" role="menuitem" data-section="medicines">
             <i class="fa-solid fa-flask nav-icon"></i>
-            <span class="nav-label">Medicines</span>
+            <span class="nav-label">Prescription</span>
           </a>
         </li>
         <li class="nav-item" role="none">
@@ -601,7 +601,7 @@
   <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-  <script src="script.js?v=1784968398346"></script>
+  <script src="script.js?v=1784972763365"></script>
   <script>
     // Collapsible Logic
     function toggleSection(element) {
@@ -988,7 +988,7 @@
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
       }
 
-      // Determine API URL (same logic as script.js?v=1784968398346)
+      // Determine API URL (same logic as script.js?v=1784972763365)
       const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:5000/api'
         : 'https://homeo-clinic-patient-management.onrender.com/api';
@@ -1068,6 +1068,26 @@
                   })
                 });
               }
+              // Auto-create Billing invoice record for consultation fee so Revenue/Reports update dynamically
+              try {
+                const consultFee = parseFloat(localStorage.getItem("consultation-fee")) || 500;
+                await fetch(`${API_URL}/billing`, {
+                  method: 'POST',
+                  headers: authHeaders,
+                  body: JSON.stringify({
+                    patient_id: patientId,
+                    subtotal_amount: consultFee,
+                    discount_amount: 0,
+                    tax_amount: 0,
+                    total_amount: consultFee,
+                    payment_mode: 'Cash',
+                    status: 'Paid',
+                    items_json: JSON.stringify([{ description: 'Homoeopathic Consultation & Case Taking', amount: consultFee }])
+                  })
+                });
+              } catch (e) {
+                console.warn('Could not auto-create billing record:', e);
+              }
             } catch (e) {
               console.warn('Could not auto-create prescription or follow-up appointment:', e);
             }
@@ -1103,7 +1123,7 @@
       }
     }
 
-    // Override script.js?v=1784968398346 showToast if needed for this page
+    // Override script.js?v=1784972763365 showToast if needed for this page
     function showToast(msg, type = "success") {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
