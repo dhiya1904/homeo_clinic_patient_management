@@ -141,7 +141,7 @@ function renderAppointments(filter = "all") {
   if (filter === "all") rows = APPOINTMENTS;
   else if (filter === "upcoming") rows = APPOINTMENTS.filter(a => a.status !== "cancelled" && a.status !== "completed");
   else rows = APPOINTMENTS.filter(a => a.status === filter);
-  tbody.innerHTML = DOMPurify.sanitize(rows.map((a, i) => `
+  tbody.innerHTML = rows.map((a, i) => `
     <tr>
       <td>${String(i + 1).padStart(2,"0")}</td>
       <td><strong>${a.name}</strong></td>
@@ -161,14 +161,14 @@ function renderAppointments(filter = "all") {
         <button class="tbl-action btn-edit-apt" title="Edit" aria-label="Edit ${a.name}" data-id="${a.id}"><i class="fa-solid fa-pen-to-square"></i></button>
         <button class="tbl-action btn-delete-apt" title="Delete" aria-label="Delete ${a.name}" data-id="${a.id}" style="color:#ef4444"><i class="fa-solid fa-trash"></i></button>
       </td>
-    </tr>`).join(""));
+    </tr>`).join("");
 }
 
 // ── PAST APPOINTMENTS TABLE ───────────────────────────────────
 function renderPastAppointments() {
   const tbody = document.getElementById("pastAppointmentsBody");
   if (!tbody) return;
-  tbody.innerHTML = DOMPurify.sanitize(PAST_APPOINTMENTS.map(a => `
+  tbody.innerHTML = PAST_APPOINTMENTS.map(a => `
     <tr>
       <td><span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--muted)">${a.date}</span></td>
       <td><strong>${a.name}</strong></td>
@@ -179,14 +179,14 @@ function renderPastAppointments() {
       <td>
         <button class="tbl-action" title="View"><i class="fa-solid fa-eye"></i></button>
       </td>
-    </tr>`).join(""));
+    </tr>`).join("");
 }
 
 // ── PATIENTS TABLE ──────────────────────────────────────────────
 function renderPatients() {
   const tbody = document.getElementById("patientList");
   if (!tbody) return;
-  tbody.innerHTML = DOMPurify.sanitize(PATIENTS.map(p => `
+  tbody.innerHTML = PATIENTS.map(p => `
     <li class="patient-item" role="listitem">
       <div class="patient-avatar" style="background:${p.color}">${getInitials(p.name)}</div>
       <div class="patient-info">
@@ -194,7 +194,7 @@ function renderPatients() {
         <div class="patient-meta">${p.age} yrs &nbsp;·&nbsp; ${p.condition}</div>
       </div>
       <span class="patient-tag tag-${p.tag}">${p.tag === "new" ? "New" : "Returning"}</span>
-    </li>`).join(""));
+    </li>`).join("");
 }
 
 // ── ALL PATIENTS TABLE (patients.html) ─────────────────────────
@@ -214,7 +214,7 @@ function renderAllPatients(patientsData) {
     return;
   }
 
-  tbody.innerHTML = DOMPurify.sanitize(data.map(p => {
+  tbody.innerHTML = data.map(p => {
     const color = p.color || '#60a5fa';
     const name = p.name || 'Unknown';
     const age = p.age || '—';
@@ -235,7 +235,7 @@ function renderAllPatients(patientsData) {
         </div>
       </td>
     </tr>`;
-  }).join(""));
+  }).join("");
 }
 
 async function openPatientProfile(id) {
@@ -364,7 +364,7 @@ async function openPatientProfile(id) {
     if (consultations.length === 0) {
       historyList.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--muted)">No consultation history found for this patient.</div>';
     } else {
-      historyList.innerHTML = DOMPurify.sanitize(consultations.map(c => {
+      historyList.innerHTML = consultations.map(c => {
         let medHtml = '';
         if (c.medicines && c.medicines.length > 0) {
           medHtml = `
@@ -392,7 +392,7 @@ async function openPatientProfile(id) {
             ${medHtml}
           </div>
         `;
-      }).join(""));
+      }).join("");
     }
   } catch (error) {
     console.error("Error loading consultation history:", error);
@@ -424,7 +424,7 @@ function renderFollowups() {
 function renderMedicines() {
   const tbody = document.getElementById("medicinesBody");
   if (!tbody) return;
-  tbody.innerHTML = DOMPurify.sanitize(MEDICINE_DATA.map((m, i) => `
+  tbody.innerHTML = MEDICINE_DATA.map((m, i) => `
     <tr>
       <td><strong>${m.patient}</strong></td>
       <td><span class="badge" style="background:rgba(96, 165, 250, 0.1);color:var(--accent);border:1px solid rgba(96, 165, 250, 0.2)">${m.medicine}</span></td>
@@ -436,7 +436,7 @@ function renderMedicines() {
         <button class="tbl-action btn-edit-presc" title="Edit Prescription" data-index="${i}"><i class="fa-solid fa-prescription"></i></button>
         <button class="tbl-action btn-toggle-presc" title="Update Status" data-index="${i}"><i class="fa-solid fa-arrows-rotate"></i></button>
       </td>
-    </tr>`).join(""));
+    </tr>`).join("");
 }
 
 // ── CHART ─────────────────────────────────────────────────────
@@ -995,7 +995,7 @@ function initSearch() {
       a.name.toLowerCase().includes(q) || a.doctor.toLowerCase().includes(q) || a.type.toLowerCase().includes(q)
     );
     const tbody = document.getElementById("appointmentsBody");
-    tbody.innerHTML = DOMPurify.sanitize(filtered.map((a, i) => `
+    tbody.innerHTML = filtered.map((a, i) => `
       <tr>
         <td>${String(i+1).padStart(2,"0")}</td>
         <td><strong>${a.name}</strong></td>
@@ -1007,7 +1007,7 @@ function initSearch() {
           <button class="tbl-action"><i class="fa-solid fa-eye"></i></button>
           <button class="tbl-action"><i class="fa-solid fa-pen-to-square"></i></button>
         </td>
-      </tr>`).join(""));
+      </tr>`).join("");
   });
 }
 
@@ -1128,7 +1128,7 @@ function updateBillSummary() {
 function renderBillItems() {
   const tbody = document.getElementById("billItemsBody");
   if (!tbody) return;
-  tbody.innerHTML = DOMPurify.sanitize(CURRENT_BILL.medicines.map((m, i) => `
+  tbody.innerHTML = CURRENT_BILL.medicines.map((m, i) => `
     <tr>
       <td>${m.name}</td>
       <td>${m.quantity}</td>
@@ -1138,7 +1138,7 @@ function renderBillItems() {
         <button class="tbl-action" onclick="removeBillItem(${i})"><i class="fa-solid fa-trash"></i></button>
       </td>
     </tr>
-  `).join(""));
+  `).join("");
   if (CURRENT_BILL.medicines.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem italic">No medicines added</td></tr>';
   }
@@ -1251,7 +1251,7 @@ function renderReportTable() {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--muted); font-size: 14px;"><i class="fa-solid fa-folder-open" style="font-size: 20px; display: block; margin-bottom: 8px;"></i>No revenue records found yet.</td></tr>`;
     return;
   }
-  tbody.innerHTML = DOMPurify.sanitize(REPORT_DATA.map(r => `
+  tbody.innerHTML = REPORT_DATA.map(r => `
     <tr>
       <td><strong>${r.month} 2026</strong></td>
       <td style="color:var(--accent); font-weight:bold">₹${r.revenue.toLocaleString('en-IN')}</td>
@@ -1259,7 +1259,7 @@ function renderReportTable() {
       <td>${r.appts}</td>
       <td><span class="badge badge-confirmed">+0%</span></td>
     </tr>
-  `).join(""));
+  `).join("");
 }
 
 async function initReportsPage() {
