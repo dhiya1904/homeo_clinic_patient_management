@@ -228,17 +228,18 @@ function renderAllPatients(patientsData) {
       <td>${condition}</td>
       <td><span class="badge badge-${tag === 'new' ? 'confirmed' : 'pending'}">${tag === 'new' ? 'New' : 'Returning'}</span></td>
       <td>
-        <button class="tbl-action" title="View Profile" onclick="openPatientProfile('${id}')"><i class="fa-solid fa-eye"></i></button>
-        <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${id}'" style="color: var(--accent);"><i class="fa-solid fa-file-medical"></i></button>
-        <button class="tbl-action" title="Add Next Visit" onclick="window.location.href='register.html?id=${id}&newVisit=true'" style="color: #10b981;"><i class="fa-solid fa-notes-medical"></i></button>
-        <button class="tbl-action" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+        <div class="tbl-actions-group">
+          <button class="tbl-action" title="View Profile" onclick="openPatientProfile('${id}')"><i class="fa-solid fa-eye"></i></button>
+          <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${id}'" style="color: var(--accent);"><i class="fa-solid fa-file-medical"></i></button>
+          <button class="tbl-action" title="Add Next Visit / Follow-Up" onclick="window.location.href='register.html?id=${id}&newVisit=true'" style="color: #10b981;"><i class="fa-solid fa-notes-medical"></i></button>
+        </div>
       </td>
     </tr>`;
   }).join(""));
 }
 
 async function openPatientProfile(id) {
-  const p = PATIENTS.find(pat => pat.id === id);
+  const p = PATIENTS.find(pat => pat.id == id || pat.patient_code === id || String(pat.id) === String(id));
   if (!p) return;
 
   const overlay = document.getElementById("patientDetailsModalOverlay");
@@ -2155,10 +2156,24 @@ function renderCalendar() {
       dayBox.classList.add("today");
     }
 
-    dayBox.innerHTML = `<span class="calendar-date">${d}</span>`;
-    
-    // Check for appointments (real database appointments)
-    let dayApts = [];
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dayApts = APPOINTMENTS.filter(a => a.date === dateStr || (a.date && a.date.startsWith(dateStr)));
+
+    let dayHtml = `<span class="calendar-date">${d}</span>`;
+    if (dayApts.length > 0) {
+      dayHtml += `<div style="margin-top:4px; display:flex; flex-direction:column; gap:2px; width:100%; overflow:hidden;">`;
+      dayApts.slice(0, 2).forEach(a => {
+        const isFollowUp = a.type === "Follow-up";
+        const badgeBg = isFollowUp ? "rgba(16, 185, 129, 0.2)" : "rgba(59, 130, 246, 0.2)";
+        const badgeColor = isFollowUp ? "#34d399" : "#60a5fa";
+        dayHtml += `<span style="background:${badgeBg}; color:${badgeColor}; font-size:10px; font-weight:600; padding:2px 4px; border-radius:4px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; display:block;" title="${a.name} (${a.type})">${a.name || 'Apt'}</span>`;
+      });
+      if (dayApts.length > 2) {
+        dayHtml += `<span style="font-size:9px; color:var(--muted); font-weight:700; align-self:flex-end;">+${dayApts.length - 2} more</span>`;
+      }
+      dayHtml += `</div>`;
+    }
+    dayBox.innerHTML = dayHtml;
 
     // Hover tooltip event listener
     if (dayApts.length > 0) {
@@ -2182,18 +2197,19 @@ function renderCalendar() {
           document.body.appendChild(tooltip);
         }
         
-        let html = `<div style="font-weight:700; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; color:var(--accent); display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-calendar-check"></i> May ${d} Schedule</div>`;
+        const monthName = monthLabel.textContent.split(' ')[0];
+        let html = `<div style="font-weight:700; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; color:var(--accent); display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-calendar-check"></i> ${monthName} ${d}, ${year} Schedule</div>`;
         dayApts.forEach(a => {
-          const statusColor = a.status === "Confirmed" ? "var(--accent)" : "var(--amber)";
+          const statusColor = (a.status === "Confirmed" || a.status === "Scheduled") ? "var(--accent)" : "var(--amber)";
           html += `
             <div style="margin-bottom:8px; display:flex; flex-direction:column; gap:2px; line-height:1.4;">
               <div style="display:flex; justify-content:space-between; font-weight:600; color:var(--text);">
                 <span>${a.name}</span>
-                <span style="color:var(--accent); font-weight:500;">${a.time}</span>
+                <span style="color:var(--accent); font-weight:500;">${a.time || '10:00'}</span>
               </div>
               <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--muted);">
-                <span>${a.doctor} • ${a.type}</span>
-                <span style="color:${statusColor}; font-weight:700;">${a.status}</span>
+                <span>${a.doctor || 'Dr. Priya S.'} • ${a.type || 'Consultation'}</span>
+                <span style="color:${statusColor}; font-weight:700;">${a.status || 'Scheduled'}</span>
               </div>
             </div>
           `;

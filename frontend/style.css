@@ -589,16 +589,31 @@ body {
 }
 .filter-select:focus { border-color: var(--accent-light); background: var(--surface); box-shadow: 0 0 0 2px var(--accent-subtle); }
 
+.tbl-actions-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
 .tbl-action {
-  background: none; border: none;
+  background: var(--surface-2, rgba(255,255,255,0.05));
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
   color: var(--muted);
   cursor: pointer;
-  padding: 8px;
-  border-radius: var(--radius-sm);
-  font-size: 16px;
-  transition: all var(--transition);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition, 0.2s ease);
 }
-.tbl-action:hover { background: var(--surface-2); color: var(--text); }
+.tbl-action:hover {
+  background: var(--surface-hover, rgba(255,255,255,0.12));
+  color: var(--text);
+  transform: translateY(-1px);
+}
 
 /* =====================================================
    CHART
