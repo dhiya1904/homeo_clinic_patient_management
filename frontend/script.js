@@ -271,6 +271,15 @@ async function openPatientProfile(id) {
     csBtn.onclick = () => window.location.href = `register.html?id=${p.id}`;
   }
 
+  // Setup Follow-Up Casesheet Button
+  const followUpBtn = document.getElementById("detFollowUpBtn");
+  if (followUpBtn) {
+    followUpBtn.onclick = () => window.location.href = `register.html?id=${p.id}&followup=true`;
+  }
+
+  // Switch to history tab by default
+  switchPatientTab('history');
+
   // Populate History (Real Data from Backend)
   const historyList = document.getElementById("detHistory");
   historyList.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--muted)"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i>Loading consultation history...</div>';
@@ -335,6 +344,39 @@ async function openPatientProfile(id) {
         });
       }
     });
+
+    // Load Casesheets
+    const casesheetsContainer = document.getElementById("casesheetsContainer");
+    if (casesheetsContainer) {
+      casesheetsContainer.innerHTML = '<div style="text-align:center; color:var(--muted)">Loading documents...</div>';
+      try {
+        const token = localStorage.getItem("token");
+        const csRes = await fetch(`${API_URL}/casesheets/${p.id}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (csRes.ok) {
+          const casesheets = await csRes.json();
+          if (casesheets.length === 0) {
+            casesheetsContainer.innerHTML = '<div style="text-align:center; color:var(--muted); font-size: 13px; padding: 20px;">No documents available.</div>';
+          } else {
+            casesheetsContainer.innerHTML = casesheets.map(cs => `
+              <div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--surface);">
+                <div>
+                  <div style="font-weight: 600; font-size: 14px; color: var(--text);">${cs.casesheet_type} Casesheet</div>
+                  <div style="font-size: 12px; color: var(--muted);"><i class="fa-solid fa-calendar-days"></i> ${new Date(cs.casesheet_date).toLocaleDateString()}</div>
+                </div>
+                <button class="btn btn-ghost" onclick="window.location.href='register.html?id=${p.id}&casesheet_id=${cs.id}'" style="border: 1px solid var(--border); padding: 5px 10px; font-size: 12px;">
+                  <i class="fa-solid fa-folder-open"></i> Open
+                </button>
+              </div>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch casesheets:", err);
+        casesheetsContainer.innerHTML = '<div style="color:var(--amber)">Failed to load documents.</div>';
+      }
+    }
 
     patientPrescriptions.forEach(presc => {
       let prescDate = 'Unknown Date';
@@ -815,9 +857,10 @@ function initModal() {
       
       // Update UI
       const filterEl = document.getElementById("aptFilter");
-      renderAppointments(filterEl ? filterEl.value : "all");
-      renderAptStatusChart();
-      initCounters();
+      if (typeof renderAppointments === 'function') renderAppointments(filterEl ? filterEl.value : "all");
+      if (typeof renderCalendar === 'function') renderCalendar();
+      if (typeof renderAptStatusChart === 'function') renderAptStatusChart();
+      if (typeof initCounters === 'function') initCounters();
       
       overlay.hidden = true;
       form.reset();
@@ -2487,19 +2530,68 @@ async function submitCaseSheet() {
 
   try {
     const token = localStorage.getItem("token");
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+
     const response = await fetch(`${API_URL}/patients`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
+      headers,
       body: JSON.stringify(patientData)
     });
 
     if (response.ok) {
+      const result = await response.json();
+      const resolvedPatientId = result.patient.id;
+
+      // Prepare full casesheet data
+      const formData = new FormData(form);
+      const dataObj = {};
+      for (let [key, value] of formData.entries()) {
+        if (key.endsWith('[]')) {
+          if (!dataObj[key]) dataObj[key] = [];
+          dataObj[key].push(value);
+        } else {
+          dataObj[key] = value;
+        }
+      }
+
+      // Check if it's follow-up or initial
+      const urlParams = new URLSearchParams(window.location.search);
+      const isFollowUp = urlParams.get('followup') === 'true';
+
+      // Save Casesheet
+      await fetch(`${API_URL}/casesheets`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          patient_id: resolvedPatientId,
+          casesheet_type: isFollowUp ? 'Follow-up' : 'Initial',
+          data: dataObj
+        })
+      });
+
+      // Check if Review Date is set, create follow-up appointment
+      const reviewDate = document.querySelector('[name="fs_review"]')?.value;
+      if (reviewDate) {
+        await fetch(`${API_URL}/appointments`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            patient_id: resolvedPatientId,
+            doctor: document.querySelector('[name="fs_doctor"]')?.value || 'Dr. Priya S.',
+            date: reviewDate,
+            time: '10:00', // Default time
+            type: 'Follow-up',
+            status: 'Scheduled'
+          })
+        });
+      }
+
       // Clear the draft from localStorage
       localStorage.removeItem('homeo_case_sheet_draft');
-      showToast(`Patient "${name}" registered successfully!`);
+      showToast(`Patient "${name}" casesheet saved successfully!`);
       setTimeout(() => { window.location.href = 'patients.html'; }, 1500);
     } else {
       const errData = await response.json();
@@ -2868,3 +2960,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   console.log("Startup sequence complete.");
 });
+
+// Global Tab Switch for Patient Details
+window.switchPatientTab = function(tabName) {
+  const tabHistory = document.getElementById('tabHistory');
+  const tabDocs = document.getElementById('tabDocuments');
+  const histContent = document.getElementById('detHistory');
+  const docContent = document.getElementById('detDocuments');
+  
+  if (!tabHistory || !tabDocs || !histContent || !docContent) return;
+  
+  if (tabName === 'history') {
+    tabHistory.style.borderBottom = '2px solid var(--accent)';
+    tabHistory.style.color = 'var(--text)';
+    tabDocs.style.borderBottom = '2px solid transparent';
+    tabDocs.style.color = 'var(--muted)';
+    histContent.style.display = 'flex';
+    docContent.style.display = 'none';
+  } else if (tabName === 'documents') {
+    tabDocs.style.borderBottom = '2px solid var(--accent)';
+    tabDocs.style.color = 'var(--text)';
+    tabHistory.style.borderBottom = '2px solid transparent';
+    tabHistory.style.color = 'var(--muted)';
+    docContent.style.display = 'flex';
+    histContent.style.display = 'none';
+  }
+};

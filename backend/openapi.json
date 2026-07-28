@@ -1,0 +1,3093 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "",
+    "title": "standard public schema",
+    "version": "14.5"
+  },
+  "host": "zzoheuokvufcmlznpjhp.supabase.co:443",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "produces": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "produces": [
+          "application/openapi+json",
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "OpenAPI description (this document)",
+        "tags": [
+          "Introspection"
+        ]
+      }
+    },
+    "/medicines": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.medicines.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.potency"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.stock_quantity"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.price_per_unit"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/medicines"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "summary": "Master list of homeopathic medicines and inventory tracking.",
+        "tags": [
+          "medicines"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.medicines"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "Master list of homeopathic medicines and inventory tracking.",
+        "tags": [
+          "medicines"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.medicines.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.potency"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.stock_quantity"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.price_per_unit"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Master list of homeopathic medicines and inventory tracking.",
+        "tags": [
+          "medicines"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.medicines.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.potency"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.stock_quantity"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.price_per_unit"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.medicines.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.medicines"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Master list of homeopathic medicines and inventory tracking.",
+        "tags": [
+          "medicines"
+        ]
+      }
+    },
+    "/bills": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.bills.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.bill_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.appointment_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.bill_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.subtotal_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.discount_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.tax_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.total_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.payment_mode"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.invoice_pdf_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/bills"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "summary": "Financial transactions and invoices for patients.",
+        "tags": [
+          "bills"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.bills"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "Financial transactions and invoices for patients.",
+        "tags": [
+          "bills"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.bills.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.bill_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.appointment_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.bill_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.subtotal_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.discount_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.tax_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.total_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.payment_mode"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.invoice_pdf_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Financial transactions and invoices for patients.",
+        "tags": [
+          "bills"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.bills.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.bill_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.appointment_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.bill_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.subtotal_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.discount_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.tax_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.total_amount"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.payment_mode"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.invoice_pdf_url"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bills.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.bills"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Financial transactions and invoices for patients.",
+        "tags": [
+          "bills"
+        ]
+      }
+    },
+    "/appointments": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.appointments.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.doctor_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.appointment_datetime"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.notes"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.follow_up_required"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.follow_up_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/appointments"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "summary": "Patient scheduling and visit tracking.",
+        "tags": [
+          "appointments"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.appointments"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "Patient scheduling and visit tracking.",
+        "tags": [
+          "appointments"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.appointments.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.doctor_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.appointment_datetime"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.notes"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.follow_up_required"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.follow_up_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Patient scheduling and visit tracking.",
+        "tags": [
+          "appointments"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.appointments.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.doctor_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.appointment_datetime"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.notes"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.follow_up_required"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.follow_up_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.appointments.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.appointments"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Patient scheduling and visit tracking.",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/bill_items": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.bill_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.quantity"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.unit_price"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.total_price"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/bill_items"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "summary": "Line items detailing specific charges on an invoice.",
+        "tags": [
+          "bill_items"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.bill_items"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "Line items detailing specific charges on an invoice.",
+        "tags": [
+          "bill_items"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.bill_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.quantity"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.unit_price"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.total_price"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Line items detailing specific charges on an invoice.",
+        "tags": [
+          "bill_items"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.bill_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.quantity"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.unit_price"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.total_price"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.bill_items.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.bill_items"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Line items detailing specific charges on an invoice.",
+        "tags": [
+          "bill_items"
+        ]
+      }
+    },
+    "/prescriptions": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.appointment_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.doctor_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.prescription_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.symptoms_observed"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.diagnosis"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.advice"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.next_visit_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/prescriptions"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "summary": "Medical prescriptions issued to patients after consultation.",
+        "tags": [
+          "prescriptions"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.prescriptions"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "Medical prescriptions issued to patients after consultation.",
+        "tags": [
+          "prescriptions"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.appointment_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.doctor_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.prescription_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.symptoms_observed"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.diagnosis"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.advice"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.next_visit_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Medical prescriptions issued to patients after consultation.",
+        "tags": [
+          "prescriptions"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.appointment_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.doctor_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.prescription_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.symptoms_observed"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.diagnosis"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.advice"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.next_visit_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescriptions.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.prescriptions"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Medical prescriptions issued to patients after consultation.",
+        "tags": [
+          "prescriptions"
+        ]
+      }
+    },
+    "/prescription_items": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.prescription_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.medicine_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.medicine_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.dosage"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.frequency"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.duration"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.instructions"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/prescription_items"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "summary": "Line items for individual medicines within a single prescription.",
+        "tags": [
+          "prescription_items"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.prescription_items"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "Line items for individual medicines within a single prescription.",
+        "tags": [
+          "prescription_items"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.prescription_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.medicine_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.medicine_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.dosage"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.frequency"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.duration"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.instructions"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Line items for individual medicines within a single prescription.",
+        "tags": [
+          "prescription_items"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.prescription_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.medicine_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.medicine_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.dosage"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.frequency"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.duration"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.instructions"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.prescription_items.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.prescription_items"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Line items for individual medicines within a single prescription.",
+        "tags": [
+          "prescription_items"
+        ]
+      }
+    },
+    "/communications": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.communications.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.channel"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.recipient_address"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.subject"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.message_content"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.sent_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/communications"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "summary": "Logs of outgoing messages and notifications to patients.",
+        "tags": [
+          "communications"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.communications"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "Logs of outgoing messages and notifications to patients.",
+        "tags": [
+          "communications"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.communications.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.channel"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.recipient_address"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.subject"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.message_content"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.sent_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Logs of outgoing messages and notifications to patients.",
+        "tags": [
+          "communications"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.communications.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.patient_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.channel"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.recipient_address"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.subject"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.message_content"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.sent_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.communications.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.communications"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Logs of outgoing messages and notifications to patients.",
+        "tags": [
+          "communications"
+        ]
+      }
+    },
+    "/users": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.users.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.username"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.password"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/users"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "summary": "System users including admins, doctors, and staff members.",
+        "tags": [
+          "users"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.users"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "System users including admins, doctors, and staff members.",
+        "tags": [
+          "users"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.users.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.username"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.password"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "System users including admins, doctors, and staff members.",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.users.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.username"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.password"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.users.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.users"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "System users including admins, doctors, and staff members.",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/patients": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.patients.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.patient_code"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.age"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.gender"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.address"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.occupation"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.chief_complaints"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.medical_history"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/patients"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "summary": "Core patient demographic and medical profile records.",
+        "tags": [
+          "patients"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.patients"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "Core patient demographic and medical profile records.",
+        "tags": [
+          "patients"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.patients.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.patient_code"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.age"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.gender"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.address"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.occupation"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.chief_complaints"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.medical_history"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Core patient demographic and medical profile records.",
+        "tags": [
+          "patients"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.patients.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.patient_code"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.age"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.gender"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.address"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.occupation"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.chief_complaints"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.medical_history"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.patients.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.patients"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "Core patient demographic and medical profile records.",
+        "tags": [
+          "patients"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "medicines": {
+      "description": "Master list of homeopathic medicines and inventory tracking.",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "format": "text",
+          "type": "string"
+        },
+        "potency": {
+          "format": "text",
+          "type": "string"
+        },
+        "type": {
+          "format": "text",
+          "type": "string"
+        },
+        "stock_quantity": {
+          "default": 0,
+          "format": "integer",
+          "type": "integer"
+        },
+        "price_per_unit": {
+          "default": 0,
+          "format": "numeric",
+          "type": "number"
+        },
+        "created_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "bills": {
+      "description": "Financial transactions and invoices for patients.",
+      "required": [
+        "id",
+        "patient_id",
+        "total_amount"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "bill_number": {
+          "format": "text",
+          "type": "string"
+        },
+        "patient_id": {
+          "description": "Note:\nThis is a Foreign Key to `patients.id`.<fk table='patients' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "appointment_id": {
+          "description": "Note:\nThis is a Foreign Key to `appointments.id`.<fk table='appointments' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "bill_date": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "subtotal_amount": {
+          "default": 0,
+          "format": "numeric",
+          "type": "number"
+        },
+        "discount_amount": {
+          "default": 0,
+          "format": "numeric",
+          "type": "number"
+        },
+        "tax_amount": {
+          "default": 0,
+          "format": "numeric",
+          "type": "number"
+        },
+        "total_amount": {
+          "default": 0,
+          "format": "numeric",
+          "type": "number"
+        },
+        "status": {
+          "default": "Pending",
+          "format": "text",
+          "type": "string"
+        },
+        "payment_mode": {
+          "format": "text",
+          "type": "string"
+        },
+        "invoice_pdf_url": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "appointments": {
+      "description": "Patient scheduling and visit tracking.",
+      "required": [
+        "id",
+        "patient_id",
+        "appointment_datetime"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "patient_id": {
+          "description": "Note:\nThis is a Foreign Key to `patients.id`.<fk table='patients' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "doctor_id": {
+          "description": "Note:\nThis is a Foreign Key to `users.id`.<fk table='users' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "appointment_datetime": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "type": {
+          "format": "text",
+          "type": "string"
+        },
+        "status": {
+          "default": "Scheduled",
+          "format": "text",
+          "type": "string"
+        },
+        "notes": {
+          "format": "text",
+          "type": "string"
+        },
+        "follow_up_required": {
+          "default": false,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "follow_up_date": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "bill_items": {
+      "description": "Line items detailing specific charges on an invoice.",
+      "required": [
+        "id",
+        "bill_id",
+        "description",
+        "unit_price",
+        "total_price"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "bill_id": {
+          "description": "Note:\nThis is a Foreign Key to `bills.id`.<fk table='bills' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "description": {
+          "format": "text",
+          "type": "string"
+        },
+        "quantity": {
+          "default": 1,
+          "format": "integer",
+          "type": "integer"
+        },
+        "unit_price": {
+          "format": "numeric",
+          "type": "number"
+        },
+        "total_price": {
+          "format": "numeric",
+          "type": "number"
+        },
+        "created_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "prescriptions": {
+      "description": "Medical prescriptions issued to patients after consultation.",
+      "required": [
+        "id",
+        "patient_id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "patient_id": {
+          "description": "Note:\nThis is a Foreign Key to `patients.id`.<fk table='patients' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "appointment_id": {
+          "description": "Note:\nThis is a Foreign Key to `appointments.id`.<fk table='appointments' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "doctor_id": {
+          "description": "Note:\nThis is a Foreign Key to `users.id`.<fk table='users' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "prescription_date": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "symptoms_observed": {
+          "format": "text",
+          "type": "string"
+        },
+        "diagnosis": {
+          "format": "text",
+          "type": "string"
+        },
+        "advice": {
+          "format": "text",
+          "type": "string"
+        },
+        "next_visit_date": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "prescription_items": {
+      "description": "Line items for individual medicines within a single prescription.",
+      "required": [
+        "id",
+        "prescription_id",
+        "medicine_name",
+        "dosage",
+        "frequency"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "prescription_id": {
+          "description": "Note:\nThis is a Foreign Key to `prescriptions.id`.<fk table='prescriptions' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "medicine_id": {
+          "description": "Note:\nThis is a Foreign Key to `medicines.id`.<fk table='medicines' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "medicine_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "dosage": {
+          "format": "text",
+          "type": "string"
+        },
+        "frequency": {
+          "format": "text",
+          "type": "string"
+        },
+        "duration": {
+          "format": "text",
+          "type": "string"
+        },
+        "instructions": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "communications": {
+      "description": "Logs of outgoing messages and notifications to patients.",
+      "required": [
+        "id",
+        "channel",
+        "recipient_address",
+        "message_content"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "patient_id": {
+          "description": "Note:\nThis is a Foreign Key to `patients.id`.<fk table='patients' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "channel": {
+          "format": "text",
+          "type": "string"
+        },
+        "recipient_address": {
+          "format": "text",
+          "type": "string"
+        },
+        "subject": {
+          "format": "text",
+          "type": "string"
+        },
+        "message_content": {
+          "format": "text",
+          "type": "string"
+        },
+        "status": {
+          "default": "Pending",
+          "format": "text",
+          "type": "string"
+        },
+        "sent_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "users": {
+      "description": "System users including admins, doctors, and staff members.",
+      "required": [
+        "id",
+        "username",
+        "password"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "username": {
+          "format": "text",
+          "type": "string"
+        },
+        "email": {
+          "format": "text",
+          "type": "string"
+        },
+        "password": {
+          "format": "text",
+          "type": "string"
+        },
+        "role": {
+          "default": "admin",
+          "format": "text",
+          "type": "string"
+        },
+        "full_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "is_active": {
+          "default": true,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "created_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "patients": {
+      "description": "Core patient demographic and medical profile records.",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "patient_code": {
+          "format": "character varying",
+          "maxLength": 20,
+          "type": "string"
+        },
+        "name": {
+          "format": "text",
+          "type": "string"
+        },
+        "age": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "gender": {
+          "format": "text",
+          "type": "string"
+        },
+        "phone": {
+          "format": "text",
+          "type": "string"
+        },
+        "email": {
+          "format": "text",
+          "type": "string"
+        },
+        "address": {
+          "format": "text",
+          "type": "string"
+        },
+        "occupation": {
+          "format": "text",
+          "type": "string"
+        },
+        "chief_complaints": {
+          "format": "text",
+          "type": "string"
+        },
+        "medical_history": {
+          "format": "jsonb"
+        },
+        "created_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "CURRENT_TIMESTAMP",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "parameters": {
+    "preferParams": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "preferReturn": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferCount": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "count=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferPost": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none",
+        "resolution=ignore-duplicates",
+        "resolution=merge-duplicates"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "select": {
+      "name": "select",
+      "description": "Filtering Columns",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "on_conflict": {
+      "name": "on_conflict",
+      "description": "On Conflict",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "order": {
+      "name": "order",
+      "description": "Ordering",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "range": {
+      "name": "Range",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "rangeUnit": {
+      "name": "Range-Unit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "default": "items",
+      "in": "header",
+      "type": "string"
+    },
+    "offset": {
+      "name": "offset",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "limit": {
+      "name": "limit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.medicines": {
+      "name": "medicines",
+      "description": "medicines",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/medicines"
+      }
+    },
+    "rowFilter.medicines.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.medicines.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.medicines.potency": {
+      "name": "potency",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.medicines.type": {
+      "name": "type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.medicines.stock_quantity": {
+      "name": "stock_quantity",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.medicines.price_per_unit": {
+      "name": "price_per_unit",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.medicines.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.medicines.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.bills": {
+      "name": "bills",
+      "description": "bills",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/bills"
+      }
+    },
+    "rowFilter.bills.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.bill_number": {
+      "name": "bill_number",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.patient_id": {
+      "name": "patient_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.appointment_id": {
+      "name": "appointment_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.bill_date": {
+      "name": "bill_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.subtotal_amount": {
+      "name": "subtotal_amount",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.discount_amount": {
+      "name": "discount_amount",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.tax_amount": {
+      "name": "tax_amount",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.total_amount": {
+      "name": "total_amount",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.payment_mode": {
+      "name": "payment_mode",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.invoice_pdf_url": {
+      "name": "invoice_pdf_url",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bills.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.appointments": {
+      "name": "appointments",
+      "description": "appointments",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/appointments"
+      }
+    },
+    "rowFilter.appointments.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.patient_id": {
+      "name": "patient_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.doctor_id": {
+      "name": "doctor_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.appointment_datetime": {
+      "name": "appointment_datetime",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.type": {
+      "name": "type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.notes": {
+      "name": "notes",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.follow_up_required": {
+      "name": "follow_up_required",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.follow_up_date": {
+      "name": "follow_up_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.appointments.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.bill_items": {
+      "name": "bill_items",
+      "description": "bill_items",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/bill_items"
+      }
+    },
+    "rowFilter.bill_items.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bill_items.bill_id": {
+      "name": "bill_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bill_items.description": {
+      "name": "description",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bill_items.quantity": {
+      "name": "quantity",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bill_items.unit_price": {
+      "name": "unit_price",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bill_items.total_price": {
+      "name": "total_price",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bill_items.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.bill_items.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.prescriptions": {
+      "name": "prescriptions",
+      "description": "prescriptions",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/prescriptions"
+      }
+    },
+    "rowFilter.prescriptions.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.patient_id": {
+      "name": "patient_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.appointment_id": {
+      "name": "appointment_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.doctor_id": {
+      "name": "doctor_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.prescription_date": {
+      "name": "prescription_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.symptoms_observed": {
+      "name": "symptoms_observed",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.diagnosis": {
+      "name": "diagnosis",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.advice": {
+      "name": "advice",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.next_visit_date": {
+      "name": "next_visit_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescriptions.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.prescription_items": {
+      "name": "prescription_items",
+      "description": "prescription_items",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/prescription_items"
+      }
+    },
+    "rowFilter.prescription_items.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescription_items.prescription_id": {
+      "name": "prescription_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescription_items.medicine_id": {
+      "name": "medicine_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescription_items.medicine_name": {
+      "name": "medicine_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescription_items.dosage": {
+      "name": "dosage",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescription_items.frequency": {
+      "name": "frequency",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescription_items.duration": {
+      "name": "duration",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescription_items.instructions": {
+      "name": "instructions",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescription_items.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.prescription_items.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.communications": {
+      "name": "communications",
+      "description": "communications",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/communications"
+      }
+    },
+    "rowFilter.communications.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.communications.patient_id": {
+      "name": "patient_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.communications.channel": {
+      "name": "channel",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.communications.recipient_address": {
+      "name": "recipient_address",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.communications.subject": {
+      "name": "subject",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.communications.message_content": {
+      "name": "message_content",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.communications.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.communications.sent_at": {
+      "name": "sent_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.communications.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.communications.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.users": {
+      "name": "users",
+      "description": "users",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/users"
+      }
+    },
+    "rowFilter.users.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.users.username": {
+      "name": "username",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.users.email": {
+      "name": "email",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.users.password": {
+      "name": "password",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.users.role": {
+      "name": "role",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.users.full_name": {
+      "name": "full_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.users.is_active": {
+      "name": "is_active",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.users.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.users.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.patients": {
+      "name": "patients",
+      "description": "patients",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/patients"
+      }
+    },
+    "rowFilter.patients.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.patient_code": {
+      "name": "patient_code",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.age": {
+      "name": "age",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.gender": {
+      "name": "gender",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.phone": {
+      "name": "phone",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.email": {
+      "name": "email",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.address": {
+      "name": "address",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.occupation": {
+      "name": "occupation",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.chief_complaints": {
+      "name": "chief_complaints",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.medical_history": {
+      "name": "medical_history",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.patients.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    }
+  },
+  "externalDocs": {
+    "description": "PostgREST Documentation",
+    "url": "https://postgrest.org/en/v14/references/api.html"
+  }
+}

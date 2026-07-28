@@ -307,6 +307,81 @@ app.post('/api/patients', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
+// CASESHEETS ROUTES
+// ============================================================
+
+// GET /api/casesheets/:patient_id
+app.get('/api/casesheets/:patient_id', authenticateToken, async (req, res) => {
+  try {
+    const lookupId = req.params.patient_id;
+    const resolvedId = await resolvePatientUUID(lookupId);
+    if (!resolvedId) {
+      return res.status(404).json({ error: 'Patient not found.' });
+    }
+
+    const { data: casesheets, error } = await supabase
+      .from('casesheets')
+      .select('*')
+      .eq('patient_id', resolvedId)
+      .order('casesheet_date', { ascending: false });
+
+    if (error) throw error;
+    res.json(casesheets);
+  } catch (err) {
+    console.error('GET /api/casesheets/:patient_id error:', err);
+    res.status(500).json({ error: 'Failed to fetch casesheets.' });
+  }
+});
+
+// GET /api/casesheets/detail/:id
+app.get('/api/casesheets/detail/:id', authenticateToken, async (req, res) => {
+  try {
+    const { data: casesheet, error } = await supabase
+      .from('casesheets')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error || !casesheet) return res.status(404).json({ error: 'Casesheet not found.' });
+    res.json(casesheet);
+  } catch (err) {
+    console.error('GET /api/casesheets/detail/:id error:', err);
+    res.status(500).json({ error: 'Failed to fetch casesheet.' });
+  }
+});
+
+// POST /api/casesheets
+app.post('/api/casesheets', authenticateToken, async (req, res) => {
+  const { patient_id, casesheet_type, data } = req.body;
+  if (!patient_id || !data) {
+    return res.status(400).json({ error: 'patient_id and data are required.' });
+  }
+
+  try {
+    const resolvedPatientId = await resolvePatientUUID(patient_id);
+    if (!resolvedPatientId) {
+      return res.status(404).json({ error: 'Patient not found.' });
+    }
+
+    const { data: casesheet, error } = await supabase
+      .from('casesheets')
+      .insert([{
+        patient_id: resolvedPatientId,
+        casesheet_type: casesheet_type || 'Initial',
+        data: data
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.status(201).json({ message: 'Casesheet saved successfully.', casesheet });
+  } catch (err) {
+    console.error('POST /api/casesheets error:', err);
+    res.status(500).json({ error: 'Failed to save casesheet.' });
+  }
+});
+
+// ============================================================
 // APPOINTMENT ROUTES
 // ============================================================
 

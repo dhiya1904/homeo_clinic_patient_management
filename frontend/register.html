@@ -680,184 +680,122 @@
       document.querySelector('#pageTitle').innerText = isNewVisit ? `New Visit for ${p.name}` : `${p.name}'s Case Sheet`;
       document.querySelector('.breadcrumb strong').innerText = p.name;
       
-      // Populate fields
+      // Fetch casesheets to check if we have previous data or a specific casesheet
+      let casesheetData = null;
+      const urlParams = new URLSearchParams(window.location.search);
+      const casesheetId = urlParams.get('casesheet_id');
+      const isFollowUp = urlParams.get('followup') === 'true';
+
+      try {
+        const token = localStorage.getItem("token");
+        if (casesheetId) {
+          const res = await fetch(`http://localhost:5000/api/casesheets/detail/${casesheetId}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (res.ok) casesheetData = await res.json();
+        } else if (isFollowUp) {
+          // Fetch the latest casesheet for pre-filling
+          const res = await fetch(`http://localhost:5000/api/casesheets/${id}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (res.ok) {
+            const list = await res.json();
+            if (list.length > 0) casesheetData = list[0]; // most recent
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch casesheet data:", err);
+      }
+
+      const cs = casesheetData ? casesheetData.data : null;
+
+      // Populate basic fields (Fixed for the patient)
       document.getElementById('regNo').value = p.id;
-      document.getElementById('regDate').value = "2026-05-01";
-      document.getElementById('referredBy').value = "Dr. Priya S.";
+      document.getElementById('regDate').value = cs?.regDate || "2026-05-01";
+      document.getElementById('referredBy').value = cs?.referredBy || "Dr. Priya S.";
       document.getElementById('fullName').value = p.name;
-      document.getElementById('gender').value = p.tag === "new" ? "Female" : "Male";
-      document.getElementById('age').value = p.age;
-      document.getElementById('dob').value = "1992-04-12";
-      document.getElementById('maritalStatus').value = "Married";
-      document.getElementById('occupation').value = "Teacher";
-      document.getElementById('dietType').value = "Vegetarian";
-      document.getElementById('phone').value = "+91 98456 12345";
-      document.getElementById('address').value = "Greenwood Apartments, Flat 4B, MG Road, Bangalore";
-      if (isNewVisit) {
-        document.getElementById('saveStatus').innerText = 'New Visit Mode';
-        // Auto-generate a new ID or keep the same patient ID? 
-        // We'll keep the same patient ID, just don't prepopulate the clinical details.
+      document.getElementById('gender').value = p.gender || "Female";
+      document.getElementById('age').value = p.age || "";
+      document.getElementById('dob').value = cs?.dob || "";
+      document.getElementById('maritalStatus').value = cs?.maritalStatus || "";
+      document.getElementById('occupation').value = p.occupation || "";
+      document.getElementById('dietType').value = cs?.dietType || "";
+      document.getElementById('phone').value = p.phone || "";
+      document.getElementById('address').value = p.address || "";
+
+      if (isFollowUp) {
+        document.getElementById('saveStatus').innerText = 'Follow-up Casesheet Mode';
         document.getElementById('regDate').valueAsDate = new Date();
-        return;
       }
 
-      document.getElementById('provisionalDiag').value = p.condition;
-      document.getElementById('finalDiag').value = p.condition;
+      // Pre-fill fixed table rows if available (Family History, Substance, Past Medical)
+      if (cs) {
+        const tableMap = {
+          'pm_condition[]': 'pastMedicalTable',
+          'sub_name[]': 'substanceTable',
+          'fam_rel[]': 'familyTable'
+        };
+        
+        Object.keys(tableMap).forEach(key => {
+          if (cs[key] && Array.isArray(cs[key])) {
+            const rowsNeeded = cs[key].length;
+            const tableId = tableMap[key];
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            while (tbody.children.length < rowsNeeded) {
+              addRow(tableId);
+            }
+          }
+        });
 
-      // Section 2: Complaints
-      document.getElementById('complaints').value = `Patient reports severe ${p.condition.toLowerCase()} symptoms starting 6 months ago. Worsened by stress and cold weather.`;
-      document.getElementById('hpi').value = "The symptoms began gradually. High severity in mornings. Associated with minor head/body aches.";
-      document.getElementById('onsetType').value = "Gradual";
-      document.getElementById('duration').value = "6 Months";
-      document.getElementById('precipitating').value = "Stress, lack of sleep";
+        // Set all fixed fields from previous casesheet
+        const fixedKeys = ['ph_birth', 'ph_dev', 'ph_vaccine', 'ph_bites', 'ph_occ', 'ph_marital', 
+                           'pm_condition[]', 'pm_age[]', 'pm_duration[]', 'pm_recovery[]', 'pm_meds[]', 'pm_adverse[]',
+                           'sub_name[]', 'sub_amt[]', 'sub_age[]', 'sub_cont[]', 'sub_last[]', 'sub_withdraw[]',
+                           'fam_rel[]', 'fam_status[]', 'fam_age[]', 'fam_illness[]', 'fam_death[]'];
+        
+        fixedKeys.forEach(key => {
+          if (key.endsWith('[]')) {
+            const inputs = form.querySelectorAll(`[name="${key}"]`);
+            if (cs[key]) {
+              cs[key].forEach((val, i) => { if (inputs[i]) inputs[i].value = val; });
+            }
+          } else {
+            const input = form.querySelector(`[name="${key}"]`);
+            if (input && cs[key]) input.value = cs[key];
+          }
+        });
+      }
 
-      // Section 3: Past Medical (Prepopulate mock row)
-      const pmTable = document.querySelector('#pastMedicalTable tbody');
-      pmTable.innerHTML = `
-        <tr>
-          <td><input type="text" name="pm_condition[]" value="Hypertension" /></td>
-          <td><input type="text" name="pm_age[]" value="30" /></td>
-          <td><input type="text" name="pm_duration[]" value="2 years" /></td>
-          <td><input type="text" name="pm_recovery[]" value="Controlled" /></td>
-          <td><input type="text" name="pm_meds[]" value="Amlodipine" /></td>
-          <td><input type="text" name="pm_adverse[]" value="None" /></td>
-          <td><button type="button" class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>
-      `;
-
-      // Section 4: Substance Use
-      const subTable = document.querySelector('#substanceTable tbody');
-      subTable.innerHTML = `
-        <tr>
-          <td>
-            <select name="sub_name[]">
-              <option selected>Tea/Coffee</option>
-              <option>Alcohol</option>
-              <option>Nicotine / Smoking</option>
-            </select>
-          </td>
-          <td><input type="text" name="sub_amt[]" value="2 cups/day" /></td>
-          <td><input type="number" name="sub_age[]" value="18" /></td>
-          <td>
-            <select name="sub_cont[]">
-              <option selected>Yes</option><option>No</option>
-            </select>
-          </td>
-          <td><input type="text" name="sub_last[]" value="Today morning" /></td>
-          <td><input type="text" name="sub_withdraw[]" value="Headache if delayed" /></td>
-          <td><button type="button" class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>
-      `;
-
-      // Section 5: Family History
-      const famTable = document.querySelector('#familyTable tbody');
-      famTable.innerHTML = `
-        <tr>
-          <td><input type="text" name="fam_rel[]" value="Mother" /></td>
-          <td>
-            <select name="fam_status[]">
-              <option selected>Alive</option><option>Deceased</option>
-            </select>
-          </td>
-          <td><input type="number" name="fam_age[]" value="58" /></td>
-          <td><input type="text" name="fam_illness[]" value="Diabetes, Thyroid" /></td>
-          <td><input type="text" name="fam_death[]" value="" /></td>
-          <td><button type="button" class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>
-      `;
-
-      // Section 6: Personal History
-      form.querySelector('[name="ph_birth"]').value = "Full term, normal vaginal delivery. No neonatal complications.";
-      form.querySelector('[name="ph_dev"]').value = "Achieved milestones at appropriate ages.";
-      form.querySelector('[name="ph_vaccine"]').value = "Fully vaccinated as per pediatric schedule.";
-      form.querySelector('[name="ph_bites"]').value = "No history of animal bites.";
-      form.querySelector('[name="ph_occ"]').value = "Works as a Primary School Teacher.";
-      form.querySelector('[name="ph_marital"]').value = "Happily married. Positive spousal relationship.";
-
-      // Section 7: Physical Generals
-      form.querySelector('[name="pg_appetite"]').value = "Good, regular meals.";
-      form.querySelector('[name="pg_thirst"]').value = "Moderate, drinks about 2L water daily.";
-      form.querySelector('[name="pg_bowels"]').value = "Regular, once daily, soft stool.";
-      form.querySelector('[name="pg_bladder"]').value = "Clear, 4-5 times a day, no pain.";
-      form.querySelector('[name="pg_perspiration"]').value = "Profuse on forehead and palms during stress.";
-      form.querySelector('[name="pg_thermal"]').value = "Chilly - worse in cold weather";
-      form.querySelector('[name="pg_sleep"]').value = "Sound, 6-7 hours. Feels refreshed.";
-      form.querySelector('[name="pg_dreams"]').value = "Dreams of regular daily activities and family.";
-      form.querySelector('[name="pg_desires"]').value = "Sweet and warm foods.";
-      form.querySelector('[name="pg_aversion"]').value = "Sour foods, cold milk.";
-      form.querySelector('[name="pg_intolerance"]').value = "Eggplant";
-      form.querySelector('[name="pg_menstrual"]').value = "LMP: 2 weeks ago, regular 28-day cycle. No dysmenorrhea. G2P2.";
-      form.querySelector('[name="pg_sexual"]').value = "Active, no complaints.";
-      form.querySelector('[name="pg_habits"]').value = "2 cups of tea daily. No tobacco, alcohol, or recreational drugs.";
-
-      // Section 8: Mental Generals
-      form.querySelector('[name="mg_stress"]').value = "Becomes anxious, talks excessively.";
-      form.querySelector('[name="mg_fear"]').value = "Fear of heights and losing loved ones.";
-      form.querySelector('[name="mg_personality"]').value = "Introverted, sensitive to criticism, organized.";
-      form.querySelector('[name="mg_hobbies"]').value = "Reading, gardening.";
-      form.querySelector('[name="mg_consolation"]').value = "Consolation makes her feel better.";
-      form.querySelector('[name="mg_relationships"]').value = "Maintains friendly terms. Emotional processing is rapid but persistent.";
-
-      // Section 9: Physical Characteristics
-      form.querySelector('[name="pc_pulse"]').value = "78 bpm";
-      form.querySelector('[name="pc_bp"]').value = "120/80 mmHg";
-      form.querySelector('[name="pc_temp"]').value = "98.4 °F";
-      form.querySelector('[name="pc_resp"]').value = "16 rpm";
-      form.querySelector('[name="pc_cyanosis"]').value = "Absent";
-      form.querySelector('[name="pc_anaemia"]').value = "Absent";
-      form.querySelector('[name="pc_jaundice"]').value = "Absent";
-      form.querySelector('[name="pc_oedema"]').value = "Absent";
-      form.querySelector('[name="pc_headache"]').value = "Occasional, frontal region.";
-      form.querySelector('[name="pc_skin"]').value = "Dry skin, prone to mild eczema in winters.";
-      form.querySelector('[name="pc_hair"]').value = "Thin hair texture.";
-
-      // HEENT
-      form.querySelector('[name="heent_head"]').value = "Normocephalic, atraumatic.";
-      form.querySelector('[name="heent_eyes"]').value = "PERRL, sclera clear, mild myopia in right eye.";
-      form.querySelector('[name="heent_ears"]').value = "TMs intact bilaterally, no discharge, normal hearing.";
-      form.querySelector('[name="heent_nose"]').value = "No congestion, septum midline, no polyps.";
-      form.querySelector('[name="heent_throat"]').value = "Tonsils normal, no erythema or exudate.";
-      form.querySelector('[name="heent_notes"]').value = "";
-
-      // Section 10: CNS
-      form.querySelector('[name="cns_cranial"]').value = "Intact, normal pupillary light reflexes.";
-      form.querySelector('[name="cns_power"]').value = "Power 5/5 in all limbs, normal tone.";
-      form.querySelector('[name="cns_reflexes"]').value = "Deep tendon reflexes normal (2+).";
-      form.querySelector('[name="cns_coord"]').value = "Normal finger-to-nose test, normal gait.";
-      form.querySelector('[name="cns_movements"]').value = "No tremors, fasciculations, or involuntary movements.";
-      form.querySelector('[name="cns_sphincter"]').value = "Full voluntary control.";
-
-      // Section 11: MSE
-      form.querySelector('[name="mse_appearance"]').value = "Neat, dressed appropriately. Cooperative.";
-      form.querySelector('[name="mse_activity"]').value = "Normal psychomotor activity, no agitation.";
-      form.querySelector('[name="mse_speech"]').value = "Normal rate, volume, and flow.";
-      form.querySelector('[name="mse_mood"]').value = "Subjective: Anxious. Objective: Euthymic.";
-      form.querySelector('[name="mse_thoughts"]').value = "Logical progression. No delusions or hallucinations.";
-      form.querySelector('[name="mse_orientation"]').value = "Oriented fully to time, place, and person.";
-      form.querySelector('[name="mse_memory"]').value = "Intact immediate, recent, and remote memory.";
-      form.querySelector('[name="mse_insight"]').value = "Insight Grade 5 (True emotional insight). Good judgment.";
-
-      // Section 12: Analysis
-      form.querySelector('[name="analysis_patient"]').value = `1. Throbbing pain worse in cold weather.\n2. Chilly temperament.\n3. Sweats on palms when anxious.`;
-      form.querySelector('[name="analysis_disease"]').value = "1. Unilateral throbbing pain.\n2. Triggered by stress and bright lights.\n3. Nausea/Vomiting (absent in patient).";
-
-      // Section 13: Final Section
-      form.querySelector('[name="fs_totality"]').value = `Patient presents chilly thermal reaction, throbbing ${p.condition.toLowerCase()} pain, sensitivity to cold and stress.`;
-      form.querySelector('[name="fs_acute"]').value = "Belladonna 200C";
-      form.querySelector('[name="fs_const"]').value = "Silicea 1M";
-      form.querySelector('[name="fs_diag"]').value = p.condition;
-      
-      const rx = MEDICINE_DATA.find(m => m.patient === p.name);
-      if (rx) {
-        form.querySelector('[name="fs_rx"]').value = `${rx.medicine} - ${rx.dosage} | ${rx.frequency}.\nFollow up after 2 weeks.`;
-      } else {
-        form.querySelector('[name="fs_rx"]').value = "Silicea 1M - 4 pills once a week in morning.\nAvoid sour food.";
+      // If viewing a specific old casesheet, pre-fill EVERYTHING and make read-only
+      if (casesheetId && cs) {
+        for (let key in cs) {
+          if (!key.endsWith('[]')) {
+            const input = form.querySelector(`[name="${key}"]`);
+            if (input) input.value = cs[key];
+          }
+        }
+        document.getElementById('saveStatus').innerText = `Viewing Casesheet: ${casesheetData.casesheet_type}`;
+        
+        // Disable all inputs
+        form.querySelectorAll('input, select, textarea, button').forEach(el => {
+          if (el.type !== 'button' || el.classList.contains('btn-remove-row') || el.classList.contains('btn-add-row')) {
+            el.disabled = true;
+          }
+        });
+        
+        const submitBtn = document.querySelector('.sticky-footer .btn-primary');
+        if (submitBtn) submitBtn.style.display = 'none'; // Hide Save Button
       }
       
-      form.querySelector('[name="fs_review"]').value = "2026-05-28";
-      form.querySelector('[name="fs_doctor"]').value = "Dr. Priya S.";
-
-      document.getElementById('saveStatus').innerText = 'Viewing Case Sheet (Viewing Mode)';
+      // If it's a follow-up, changeable fields stay empty (or are cleared since we only loaded fixed keys)
+      if (isFollowUp) {
+        document.getElementById('provisionalDiag').value = "";
+        document.getElementById('complaints').value = "";
+        document.getElementById('finalDiag').value = "";
+      } else if (!casesheetId && !cs) {
+        // Mock default values for initial view if no casesheet
+        document.getElementById('complaints').value = p.condition;
+      }
     }
 
     function restoreDraft() {
