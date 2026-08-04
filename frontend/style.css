@@ -843,13 +843,14 @@ body {
 .toast {
   position: fixed;
   bottom: 32px; right: 32px;
-  background: var(--text);
-  color: #fff;
-  padding: 16px 24px;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  padding: 14px 22px;
   border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 500;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   transform: translateY(80px);
   opacity: 0;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -857,9 +858,24 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  max-width: 400px;
+  max-width: 420px;
 }
 .toast.show { transform: translateY(0); opacity: 1; }
+.toast i { font-size: 16px; }
+.toast.success i { color: #10b981; }
+.toast.error i { color: #f87171; }
+.toast.warning i { color: #fbbf24; }
+
+[data-theme="dark"] .toast {
+  background: #18181b;
+  color: #f4f4f5;
+  border: 1px solid #3f3f46;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85);
+}
+[data-theme="dark"] .toast.success i { color: #34d399; }
+[data-theme="dark"] .toast.error i { color: #f87171; }
+[data-theme="dark"] .toast.warning i { color: #fbbf24; }
+
 
 /* =====================================================
    CALENDAR

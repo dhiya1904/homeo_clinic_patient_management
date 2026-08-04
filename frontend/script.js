@@ -210,7 +210,7 @@ function renderAllPatients(patientsData) {
   if (badge) badge.textContent = data.length;
 
   if (data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--muted)"><i class="fa-solid fa-users" style="font-size:2rem;margin-bottom:0.8rem;display:block;"></i>No patients registered yet.<br><a href="register.html" style="color:var(--accent);font-weight:600;">Register your first patient →</a></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--muted)"><i class="fa-solid fa-users" style="font-size:2rem;margin-bottom:0.8rem;display:block;"></i>No patients registered yet.<br><a href="register.html" style="color:var(--accent);font-weight:600;">Register your first patient →</a></td></tr>`;
     return;
   }
 
@@ -221,11 +221,26 @@ function renderAllPatients(patientsData) {
     const condition = p.complaints || p.condition || '—';
     const tag = p.tag || 'new';
     const id = p.id || '';
+
+    // Calculate Last Visited Date
+    let lastVisit = '—';
+    const pApts = APPOINTMENTS.filter(a => a.patient_id === id || a.name === name);
+    if (pApts.length > 0) {
+      pApts.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      lastVisit = pApts[0].date ? pApts[0].date.split('T')[0] : '—';
+    } else if (p.created_at || p.registration_date) {
+      const dStr = p.created_at || p.registration_date;
+      lastVisit = dStr ? new Date(dStr).toISOString().split('T')[0] : '—';
+    } else {
+      lastVisit = new Date().toISOString().split('T')[0];
+    }
+
     return `<tr>
       <td><div class="patient-avatar" style="background:${color};width:32px;height:32px;font-size:12px;margin:auto;">${getInitials(name)}</div></td>
       <td><strong style="color:var(--accent); cursor:pointer" onclick="openPatientProfile('${id}')">${name}</strong></td>
       <td>${age}</td>
       <td>${condition}</td>
+      <td><span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-weight:500;">${lastVisit}</span></td>
       <td><span class="badge badge-${tag === 'new' ? 'confirmed' : 'pending'}">${tag === 'new' ? 'New' : 'Returning'}</span></td>
       <td>
         <div class="tbl-actions-group">
@@ -1218,9 +1233,129 @@ function removeBillItem(index) {
   renderBillItems();
 }
 
+// Helper to sync new medicines into inventory and update dropdowns
+function syncMedicineInventory(medName, price = 150) {
+  if (!medName || typeof medName !== 'string') return;
+  const cleanName = medName.trim();
+  if (cleanName && cleanName.length > 2 && !MEDICINE_PRICES[cleanName]) {
+    MEDICINE_PRICES[cleanName] = price;
+  }
+  populateMedicineDropdowns();
+}
+
+function populateMedicineDropdowns() {
+  const medSelects = document.querySelectorAll("#billMedSelect, .medicine-select");
+  medSelects.forEach(select => {
+    const curVal = select.value;
+    select.innerHTML = '<option value="">Select Medicine</option>';
+    Object.keys(MEDICINE_PRICES).forEach(med => {
+      const opt = document.createElement("option");
+      opt.value = med;
+      opt.textContent = `${med} (₹${MEDICINE_PRICES[med]})`;
+      select.appendChild(opt);
+    });
+    if (curVal) select.value = curVal;
+  });
+}
+
+function populatePatientDatalist() {
+  const datalist = document.getElementById("patientDatalist");
+  if (!datalist) return;
+  datalist.innerHTML = PATIENTS.map(p => `
+    <option value="${p.name}">${p.patient_code || p.id || ''} - ${p.name}</option>
+    ${p.patient_code ? `<option value="${p.patient_code}">${p.name}</option>` : ''}
+    ${p.id ? `<option value="${p.id}">${p.name}</option>` : ''}
+  `).join("");
+}
+
+async function selectPatientForBilling(searchVal) {
+  if (!searchVal) return;
+  const q = searchVal.trim().toLowerCase();
+
+  const p = PATIENTS.find(pat => 
+    pat.name.toLowerCase() === q || 
+    pat.name.toLowerCase().includes(q) || 
+    pat.id?.toLowerCase() === q || 
+    pat.patient_code?.toLowerCase() === q
+  );
+
+  if (p) {
+    document.getElementById("billPatientName").textContent = p.name;
+    document.getElementById("billPatientDetails").textContent = `${p.age || '—'} Years • ${(p.tag || 'NEW').toUpperCase()}`;
+    const avatar = document.getElementById("billPatientAvatar");
+    if (avatar) avatar.textContent = getInitials(p.name);
+    
+    CURRENT_BILL.patient = p;
+
+    // Fetch prescribed medicines from backend prescriptions & casesheets
+    let prescItems = [];
+    try {
+      const token = localStorage.getItem("token");
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+      // 1. Fetch Prescriptions API
+      const res = await fetch(`${API_URL}/prescriptions`, { headers });
+      if (res.ok) {
+        const allPresc = await res.json();
+        const patientPresc = allPresc.filter(pr => pr.patient_id === p.id || pr.patient_name === p.name);
+        patientPresc.forEach(pr => {
+          const rxStr = pr.advice || pr.prescription || '';
+          if (rxStr) {
+            rxStr.split(/[\n,;]+/).forEach(m => {
+              const clean = m.replace(/[-|].*$/, '').trim();
+              if (clean.length > 2 && !prescItems.includes(clean)) prescItems.push(clean);
+            });
+          }
+        });
+      }
+
+      // 2. Fetch Casesheets API
+      const csRes = await fetch(`${API_URL}/casesheets/${p.id}`, { headers });
+      if (csRes.ok) {
+        const casesheets = await csRes.json();
+        casesheets.forEach(cs => {
+          const d = cs.data || {};
+          const rx = d.fs_rx || d.fs_acute || d.fs_const || '';
+          if (rx) {
+            rx.split(/[\n,;]+/).forEach(m => {
+              const clean = m.replace(/[-|].*$/, '').trim();
+              if (clean.length > 2 && !prescItems.includes(clean)) prescItems.push(clean);
+            });
+          }
+        });
+      }
+    } catch (e) {
+      console.error("Error auto-fetching patient medicines for billing:", e);
+    }
+
+    if (prescItems.length > 0) {
+      CURRENT_BILL.medicines = prescItems.map(medName => {
+        syncMedicineInventory(medName);
+        return {
+          name: medName,
+          quantity: 1,
+          price: MEDICINE_PRICES[medName] || 150
+        };
+      });
+      showToast(`Auto-fetched ${prescItems.length} prescribed medicine(s) from case sheet for ${p.name}`);
+    } else {
+      CURRENT_BILL.medicines = [];
+      showToast(`Selected patient ${p.name}. No active prescriptions found.`);
+    }
+
+    renderBillItems();
+    populateMedicineDropdowns();
+  } else {
+    showToast("Patient not found", "error");
+  }
+}
+
 function initBillingPage() {
   const billForm = document.getElementById("billing-page-container");
   if (!billForm) return;
+
+  populatePatientDatalist();
+  populateMedicineDropdowns();
 
   // Dynamically set consultation fee based on primary doctor in settings
   const primaryDocName = localStorage.getItem("doctor-name") || "Dr. Priya S.";
@@ -1241,14 +1376,20 @@ function initBillingPage() {
     if (input) {
       input.value = patientIdFromUrl;
       setTimeout(() => {
-        const btn = document.getElementById("searchPatientBill");
-        if (btn) btn.click();
+        selectPatientForBilling(patientIdFromUrl);
       }, 100);
     }
   }
 
-  document.getElementById("addBillItemBtn").addEventListener("click", addBillItem);
-  
+  document.getElementById("addBillItemBtn")?.addEventListener("click", addBillItem);
+
+  const billPatientInput = document.getElementById("billPatientID");
+  if (billPatientInput) {
+    billPatientInput.addEventListener("change", (e) => {
+      selectPatientForBilling(e.target.value);
+    });
+  }
+
   ["billConsultation", "billLab", "billService", "billDiscount"].forEach(id => {
     const input = document.getElementById(id);
     if (input) {
@@ -1264,37 +1405,8 @@ function initBillingPage() {
   });
 
   document.getElementById("searchPatientBill")?.addEventListener("click", () => {
-    const searchVal = document.getElementById("billPatientID").value.trim().toLowerCase();
-    if (!searchVal) return;
-
-    // 1. Find Patient Info
-    const p = PATIENTS.find(pat => pat.name.toLowerCase().includes(searchVal) || pat.id?.toLowerCase() === searchVal);
-    
-    if (p) {
-      document.getElementById("billPatientName").textContent = p.name;
-      document.getElementById("billPatientDetails").textContent = `${p.age} Years • ${p.tag.toUpperCase()}`;
-      
-      // 2. Automatically Fetch Prescriptions for this patient
-      const prescriptions = MEDICINE_DATA.filter(m => m.patient === p.name && m.status === "Running");
-      
-      if (prescriptions.length > 0) {
-        // Clear existing bill and add prescribed items
-        CURRENT_BILL.medicines = prescriptions.map(presc => ({
-          name: presc.medicine,
-          quantity: 1, // Default to 1, can be adjusted
-          price: MEDICINE_PRICES[presc.medicine] || 0
-        }));
-        
-        showToast(`Auto-fetched ${prescriptions.length} prescriptions for ${p.name}`);
-      } else {
-        CURRENT_BILL.medicines = [];
-        showToast(`Loaded info for ${p.name}. No active prescriptions found.`);
-      }
-      
-      renderBillItems();
-    } else {
-      showToast("Patient not found", "error");
-    }
+    const searchVal = document.getElementById("billPatientID").value.trim();
+    selectPatientForBilling(searchVal);
   });
 
   renderBillItems();
@@ -2136,7 +2248,7 @@ async function printInvoice() {
 }
 
 // ── CALENDAR LOGIC ──────────────────────────────────────────
-let currentCalDate = new Date(2026, 4, 1); // Starting May 2026
+let currentCalDate = new Date(); // Dynamic current date (month & year)
 
 function initCalendar() {
   const viewListBtn = document.getElementById("viewList");
@@ -2209,30 +2321,60 @@ function renderCalendar() {
     grid.appendChild(empty);
   }
 
+  // Combine APPOINTMENTS and PAST_APPOINTMENTS
+  const allApts = [...APPOINTMENTS, ...PAST_APPOINTMENTS];
+
   // Days of month
   for (let d = 1; d <= daysInMonth; d++) {
     const dayBox = document.createElement("div");
     dayBox.className = "calendar-day";
     
     // Highlight today
-    if (year === today.getFullYear() && month === today.getMonth() && d === today.getDate()) {
+    const isToday = year === today.getFullYear() && month === today.getMonth() && d === today.getDate();
+    if (isToday) {
       dayBox.classList.add("today");
     }
 
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const dayApts = APPOINTMENTS.filter(a => a.date === dateStr || (a.date && a.date.startsWith(dateStr)));
+    const mStr = String(month + 1).padStart(2, "0");
+    const dStr = String(d).padStart(2, "0");
+    const fullDateStr = `${year}-${mStr}-${dStr}`;
 
-    let dayHtml = `<span class="calendar-date">${d}</span>`;
+    const dayApts = allApts.filter(a => {
+      if (!a.date) return false;
+      const cleanAptDate = a.date.split("T")[0];
+      return cleanAptDate === fullDateStr;
+    });
+
+    let dayHtml = `<span class="calendar-date" style="${isToday ? 'font-weight:800; color:var(--accent);' : ''}">${d}</span>`;
     if (dayApts.length > 0) {
-      dayHtml += `<div style="margin-top:4px; display:flex; flex-direction:column; gap:2px; width:100%; overflow:hidden;">`;
-      dayApts.slice(0, 2).forEach(a => {
+      dayBox.classList.add("has-apt");
+      dayHtml += `<div style="margin-top:4px; display:flex; flex-direction:column; gap:3px; width:100%; overflow:hidden;">`;
+      dayApts.slice(0, 3).forEach(a => {
         const isFollowUp = a.type === "Follow-up";
-        const badgeBg = isFollowUp ? "rgba(16, 185, 129, 0.2)" : "rgba(59, 130, 246, 0.2)";
-        const badgeColor = isFollowUp ? "#34d399" : "#60a5fa";
-        dayHtml += `<span style="background:${badgeBg}; color:${badgeColor}; font-size:10px; font-weight:600; padding:2px 4px; border-radius:4px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; display:block;" title="${a.name} (${a.type})">${a.name || 'Apt'}</span>`;
+        const isCompleted = a.status === "Completed" || a.status === "completed" || a.status === "Attended";
+        
+        let badgeBg, badgeColor, statusLabel;
+        if (isCompleted) {
+          badgeBg = "rgba(16, 185, 129, 0.25)";
+          badgeColor = "#10b981";
+          statusLabel = "Attended";
+        } else if (isFollowUp) {
+          badgeBg = "rgba(168, 85, 247, 0.25)";
+          badgeColor = "#c084fc";
+          statusLabel = "Follow-up";
+        } else {
+          badgeBg = "rgba(59, 130, 246, 0.25)";
+          badgeColor = "#60a5fa";
+          statusLabel = a.status || "Scheduled";
+        }
+
+        const displayName = a.name || a.patient_name || (a.patient_id ? `Patient ${a.patient_id}` : 'Patient');
+        dayHtml += `<span style="background:${badgeBg}; color:${badgeColor}; font-size:10px; font-weight:600; padding:2px 5px; border-radius:4px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; display:block;" title="${displayName} - ${statusLabel}">
+          <i class="fa-solid ${isCompleted ? 'fa-circle-check' : 'fa-clock'}" style="font-size:9px; margin-right:3px"></i>${displayName}
+        </span>`;
       });
-      if (dayApts.length > 2) {
-        dayHtml += `<span style="font-size:9px; color:var(--muted); font-weight:700; align-self:flex-end;">+${dayApts.length - 2} more</span>`;
+      if (dayApts.length > 3) {
+        dayHtml += `<span style="font-size:9px; color:var(--muted); font-weight:700; align-self:flex-end;">+${dayApts.length - 3} more</span>`;
       }
       dayHtml += `</div>`;
     }
@@ -2246,7 +2388,7 @@ function renderCalendar() {
           tooltip = document.createElement("div");
           tooltip.id = "calendar-tooltip";
           tooltip.style.position = "absolute";
-          tooltip.style.background = "var(--sidebar-bg, #000)";
+          tooltip.style.background = "var(--surface, #1e293b)";
           tooltip.style.border = "1px solid var(--border)";
           tooltip.style.padding = "14px";
           tooltip.style.borderRadius = "12px";
@@ -2261,18 +2403,21 @@ function renderCalendar() {
         }
         
         const monthName = monthLabel.textContent.split(' ')[0];
-        let html = `<div style="font-weight:700; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; color:var(--accent); display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-calendar-check"></i> ${monthName} ${d}, ${year} Schedule</div>`;
+        let html = `<div style="font-weight:700; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px; color:var(--accent); display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-calendar-check"></i> ${monthName} ${d}, ${year} Schedule</div>`;
         dayApts.forEach(a => {
-          const statusColor = (a.status === "Confirmed" || a.status === "Scheduled") ? "var(--accent)" : "var(--amber)";
+          const displayName = a.name || a.patient_name || 'Patient';
+          const isComp = a.status === "Completed" || a.status === "completed" || a.status === "Attended";
+          const statusColor = isComp ? "#10b981" : "var(--accent)";
+          const statusTxt = isComp ? "Attended" : (a.status || 'Scheduled');
           html += `
             <div style="margin-bottom:8px; display:flex; flex-direction:column; gap:2px; line-height:1.4;">
               <div style="display:flex; justify-content:space-between; font-weight:600; color:var(--text);">
-                <span>${a.name}</span>
+                <span>${displayName}</span>
                 <span style="color:var(--accent); font-weight:500;">${a.time || '10:00'}</span>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--muted);">
+              <div style="display:flex; justify-size:between; font-size:11px; color:var(--muted);">
                 <span>${a.doctor || 'Dr. Priya S.'} • ${a.type || 'Consultation'}</span>
-                <span style="color:${statusColor}; font-weight:700;">${a.status || 'Scheduled'}</span>
+                <span style="color:${statusColor}; font-weight:700;">${statusTxt}</span>
               </div>
             </div>
           `;
@@ -2588,6 +2733,21 @@ async function submitCaseSheet() {
           })
         });
       }
+
+      // Extract prescribed medicines and update medicine inventory
+      const rxText = dataObj['fs_rx'] || '';
+      const acuteText = dataObj['fs_acute'] || '';
+      const constText = dataObj['fs_const'] || '';
+      [rxText, acuteText, constText].forEach(txt => {
+        if (txt) {
+          txt.split(/[\n,;]+/).forEach(item => {
+            const clean = item.replace(/[-|].*$/, '').trim();
+            if (clean.length > 2) {
+              syncMedicineInventory(clean);
+            }
+          });
+        }
+      });
 
       // Clear the draft from localStorage
       localStorage.removeItem('homeo_case_sheet_draft');
@@ -2935,17 +3095,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // 4. Load appointments from backend
+  const apts = await getBackendAppointments();
+  if (apts.length > 0) {
+    APPOINTMENTS.length = 0;
+    apts.forEach(a => APPOINTMENTS.push({ ...a, name: a.patient_name || a.name }));
+  }
   if (document.getElementById("appointmentsBody")) {
-    const apts = await getBackendAppointments();
-    if (apts.length > 0) {
-      APPOINTMENTS.length = 0;
-      apts.forEach(a => APPOINTMENTS.push({ ...a, name: a.patient_name || a.name }));
-    }
     renderAppointments("all");
   }
 
   // 5. Final Renderings
-  if (document.getElementById("appointmentsCalendar")?.style.display !== "none") {
+  if (document.getElementById("calendarGrid")) {
     renderCalendar();
   }
   
@@ -2957,6 +3117,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderDonutChart();
   renderAptStatusChart();
   initCounters();
+  populatePatientDatalist();
+  populateMedicineDropdowns();
   
   console.log("Startup sequence complete.");
 });

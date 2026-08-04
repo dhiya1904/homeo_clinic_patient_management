@@ -153,10 +153,11 @@
             <div class="card-body p-4" style="padding:1.5rem">
               <div style="display:flex; gap:1rem; align-items:flex-end">
                 <div class="form-group" style="flex:1">
-                  <label>Search Patient ID / Name</label>
-                  <input type="text" id="billPatientID" placeholder="e.g. P-1001" />
+                  <label>Select / Search Patient</label>
+                  <input type="text" id="billPatientID" list="patientDatalist" placeholder="Type or select patient name or ID..." autocomplete="off" />
+                  <datalist id="patientDatalist"></datalist>
                 </div>
-                <button class="btn btn-primary" id="searchPatientBill" style="height:42px">Find Patient</button>
+                <button class="btn btn-primary" id="searchPatientBill" style="height:42px"><i class="fa-solid fa-magnifying-glass"></i> Find Patient</button>
               </div>
               
               <div id="selectedPatientDisplay" style="margin-top:1.5rem; display:flex; gap:1.5rem; align-items:center; background:var(--bg); padding:1rem; border-radius:12px">
