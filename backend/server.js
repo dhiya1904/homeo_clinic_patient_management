@@ -389,16 +389,20 @@ app.post('/api/casesheets', authenticateToken, async (req, res) => {
 function splitDatetime(datetimeStr) {
   if (!datetimeStr) return { date: null, time: null };
   const d = new Date(datetimeStr);
-  const date = d.toISOString().split('T')[0];
-  const time = d.toTimeString().slice(0, 5); // HH:MM
+  if (isNaN(d.getTime())) return { date: null, time: null };
+  const date = d.toLocaleDateString('sv-SE');
+  const time = d.toTimeString().slice(0, 5); // local time HH:MM
   return { date, time };
 }
 
 // Helper: merge frontend date + time into a TIMESTAMPTZ string
 function mergeDateTime(dateStr, timeStr) {
   if (!dateStr) return null;
-  const combined = timeStr ? `${dateStr}T${timeStr}:00` : `${dateStr}T00:00:00`;
-  return new Date(combined).toISOString();
+  const cleanTime = timeStr && timeStr.trim() ? timeStr.trim() : "00:00";
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const [hours, minutes] = cleanTime.split(':').map(Number);
+  const d = new Date(year, month - 1, day, hours || 0, minutes || 0, 0, 0);
+  return d.toISOString();
 }
 
 // Normalize appointment type to match CHECK constraint

@@ -25,6 +25,13 @@ function getInitials(name) {
   return name.split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase();
 }
 
+function getLocalISODate(dateVal) {
+  if (!dateVal) return '';
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('sv-SE');
+}
+
 function showToast(msg, type = "success") {
   const t = document.getElementById("toast");
   if (!t) {
@@ -227,12 +234,12 @@ function renderAllPatients(patientsData) {
     const pApts = APPOINTMENTS.filter(a => a.patient_id === id || a.name === name);
     if (pApts.length > 0) {
       pApts.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-      lastVisit = pApts[0].date ? pApts[0].date.split('T')[0] : '—';
+      lastVisit = pApts[0].date ? getLocalISODate(pApts[0].date) : '—';
     } else if (p.created_at || p.registration_date) {
       const dStr = p.created_at || p.registration_date;
-      lastVisit = dStr ? new Date(dStr).toISOString().split('T')[0] : '—';
+      lastVisit = dStr ? getLocalISODate(dStr) : '—';
     } else {
-      lastVisit = new Date().toISOString().split('T')[0];
+      lastVisit = getLocalISODate(new Date());
     }
 
     return `<tr>
@@ -331,7 +338,7 @@ async function openPatientProfile(id) {
     patientBills.forEach(bill => {
       let billDate = 'Unknown Date';
       if (bill.date) {
-        billDate = new Date(bill.date).toISOString().split('T')[0];
+        billDate = getLocalISODate(bill.date);
       }
 
       let medicines = [];
@@ -396,7 +403,7 @@ async function openPatientProfile(id) {
     patientPrescriptions.forEach(presc => {
       let prescDate = 'Unknown Date';
       if (presc.created_at) {
-        prescDate = new Date(presc.created_at).toISOString().split('T')[0];
+        prescDate = getLocalISODate(presc.created_at);
       }
 
       const matching = consultations.find(c => c.date === prescDate);
@@ -492,7 +499,7 @@ async function renderMedicines() {
     const patientName = p.patient_name || 'Unknown Patient';
     const diag = p.diagnosis || p.symptoms_observed || 'General Homoeopathic Consultation';
     const rx = p.advice || 'Remedy prescribed per case sheet totality';
-    const pDate = p.prescription_date ? new Date(p.prescription_date).toISOString().split('T')[0] : '—';
+    const pDate = p.prescription_date ? getLocalISODate(p.prescription_date) : '—';
     const rDate = p.next_visit_date || '—';
     const patientId = p.patient_id || '';
 
@@ -846,7 +853,7 @@ function initModal() {
 
       // Ensure we have today's date for this mock appointment creation if there's no date input,
       // but ideally we should have a date input. For now, use today.
-      const date = new Date().toISOString().split('T')[0];
+      const date = getLocalISODate(new Date());
 
       const token = localStorage.getItem("token");
       const response = await fetch(`${API_URL}/appointments`, {
@@ -1717,12 +1724,15 @@ function initNotificationPanel() {
 
   // Build notification content from today's appointments
   function buildPanelContent() {
-    const today = new Date().toISOString().split("T")[0];
-    const todayApts = APPOINTMENTS.filter(a => a.date === today || (a.datetime && a.datetime.startsWith(today)));
+    const today = getLocalISODate(new Date());
+    const todayApts = APPOINTMENTS.filter(a => {
+      const cleanDate = a.date || (a.appointment_datetime && getLocalISODate(a.appointment_datetime));
+      return cleanDate === today;
+    });
 
     const followUps = APPOINTMENTS.filter(a => {
-      const d = a.date || (a.datetime && a.datetime.split("T")[0]);
-      return d === today && a.status === "Pending";
+      const d = a.date || (a.appointment_datetime && getLocalISODate(a.appointment_datetime));
+      return d === today && (a.status === "Pending" || a.status === "pending");
     });
 
     const notifications = [];
@@ -2150,16 +2160,15 @@ function initSettingsPage() {
   });
 }
 
-async function printInvoice() {
+async function saveBillToServer() {
   const patientName = document.getElementById("billPatientName").textContent;
   const patientId = document.getElementById("billPatientID")?.value || "N/A";
 
-  if (patientName === "No Patient Selected") {
+  if (patientName === "No Patient Selected" || !CURRENT_BILL.patient) {
     showToast("Please select a patient first!", "error");
-    return;
+    return null;
   }
 
-  // Prepare bill data
   const medicineTotal = CURRENT_BILL.medicines.reduce((sum, item) => sum + (item.quantity * item.price), 0);
   const subtotal = CURRENT_BILL.consultation + medicineTotal + CURRENT_BILL.lab + CURRENT_BILL.service;
   const discountAmount = (subtotal * CURRENT_BILL.discount) / 100;
@@ -2177,24 +2186,55 @@ async function printInvoice() {
       },
       body: JSON.stringify({
         id: billId,
-        patient_id: patientId,
+        patient_id: CURRENT_BILL.patient.id || patientId,
         total_amount: total,
         items_json: CURRENT_BILL.medicines
       })
     });
 
-    if (!response.ok) {
-      showToast("Could not save bill to database, but printing anyway.", "warning");
+    if (response.ok) {
+      return billId;
+    } else {
+      const err = await response.json();
+      showToast(err.error || "Could not save bill to database.", "error");
+      return null;
     }
   } catch (err) {
     console.error("Billing save failed:", err);
+    showToast("Server error saving bill.", "error");
+    return null;
   }
+}
+
+async function saveBillOnly() {
+  const billId = await saveBillToServer();
+  if (billId) {
+    showToast(`Bill ${billId} saved successfully!`);
+    resetBillingForm();
+  }
+}
+
+async function printInvoice() {
+  const patientName = document.getElementById("billPatientName").textContent;
+  const patientId = document.getElementById("billPatientID")?.value || "N/A";
+
+  if (patientName === "No Patient Selected") {
+    showToast("Please select a patient first!", "error");
+    return;
+  }
+
+  const billId = await saveBillToServer();
+  if (!billId) {
+    showToast("Could not save bill to database, but printing anyway.", "warning");
+  }
+
+  const targetBillId = billId || ("BL-" + Math.floor(1000 + Math.random() * 9000));
 
   // Populate print template
   document.getElementById("printDate").textContent = new Date().toLocaleDateString();
-  document.getElementById("printBillNo").textContent = billId;
+  document.getElementById("printBillNo").textContent = targetBillId;
   document.getElementById("printPatientName").textContent = patientName;
-  document.getElementById("printPatientID").textContent = document.getElementById("billPatientID").value;
+  document.getElementById("printPatientID").textContent = patientId;
   
   const printSubtotal = Array.from(document.querySelectorAll("#billItemsBody tr")).reduce((acc, tr) => {
     const totalCell = tr.children[3];
@@ -2245,6 +2285,41 @@ async function printInvoice() {
   document.body.classList.add("printing-invoice");
   window.print();
   document.body.classList.remove("printing-invoice");
+
+  resetBillingForm();
+}
+
+function resetBillingForm() {
+  CURRENT_BILL.patient = null;
+  CURRENT_BILL.medicines = [];
+  
+  const primaryDocName = localStorage.getItem("doctor-name") || "Dr. Priya S.";
+  const primaryDoc = AVAILABLE_DOCTORS.find(d => d.name === primaryDocName);
+  const defaultFee = primaryDoc ? primaryDoc.charge : 350;
+  
+  CURRENT_BILL.consultation = defaultFee;
+  CURRENT_BILL.lab = 0;
+  CURRENT_BILL.service = 0;
+  CURRENT_BILL.discount = 0;
+
+  const consInput = document.getElementById("billConsultation");
+  if (consInput) consInput.value = defaultFee;
+  
+  ["billLab", "billService", "billDiscount", "billPatientID"].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) input.value = "";
+  });
+
+  const nameEl = document.getElementById("billPatientName");
+  if (nameEl) nameEl.textContent = "No Patient Selected";
+
+  const detEl = document.getElementById("billPatientDetails");
+  if (detEl) detEl.textContent = "Enter ID and click Find";
+
+  const avatar = document.getElementById("billPatientAvatar");
+  if (avatar) avatar.innerHTML = '<i class="fa-solid fa-user" style="margin:auto"></i>';
+
+  renderBillItems();
 }
 
 // ── CALENDAR LOGIC ──────────────────────────────────────────

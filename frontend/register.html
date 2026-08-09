@@ -951,7 +951,7 @@
           if (patientId) {
             // 2. Create Appointment Record safely
             try {
-              const aptDate = document.getElementById('regDate')?.value || new Date().toISOString().split('T')[0];
+              const aptDate = document.getElementById('regDate')?.value || new Date().toLocaleDateString('sv-SE');
               const doctorName = document.querySelector('[name="fs_doctor"]')?.value || 'Dr. Priya S.';
               
               await fetch(`${API_URL}/appointments`, {
@@ -1033,7 +1033,9 @@
 
           localStorage.removeItem(DRAFT_KEY);
           showToast(`Case Sheet for "${name}" saved successfully!`);
-          setTimeout(() => { window.location.href = 'patients.html'; }, 1500);
+          setTimeout(() => {
+            showBillingPromptModal(patientId, name);
+          }, 1000);
         } else {
           let errMsg = 'Failed to register patient.';
           try {
@@ -1068,6 +1070,52 @@
       toast.style.background = type === "error" ? "#ef4444" : "#0d9488";
       toast.className = "toast show";
       setTimeout(() => { toast.className = "toast"; }, 3000);
+    }
+
+    function showBillingPromptModal(patientId, patientName) {
+      let overlay = document.getElementById("billingPromptModalOverlay");
+      if (overlay) overlay.remove();
+
+      overlay = document.createElement("div");
+      overlay.id = "billingPromptModalOverlay";
+      overlay.className = "modal-overlay";
+      overlay.style.position = "fixed";
+      overlay.style.top = "0"; overlay.style.left = "0";
+      overlay.style.width = "100%"; overlay.style.height = "100%";
+      overlay.style.background = "rgba(0, 0, 0, 0.6)";
+      overlay.style.display = "flex";
+      overlay.style.alignItems = "center";
+      overlay.style.justifyContent = "center";
+      overlay.style.zIndex = "4000";
+      overlay.style.backdropFilter = "blur(4px)";
+
+      overlay.innerHTML = `
+        <div class="modal" style="width: 100%; max-width: 420px; background: var(--surface, #fff); border: 1px solid var(--border, #eee); border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 24px; text-align: center; font-family: 'Inter', sans-serif;">
+          <div style="width: 60px; height: 60px; background: rgba(37, 99, 235, 0.1); color: #2563eb; border-radius: 50%; display: grid; place-items: center; font-size: 28px; margin: 0 auto 16px;">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+          <h2 style="font-size: 1.25rem; font-weight: 700; margin: 0 0 8px 0; color: var(--text, #111827);">Generate Bill?</h2>
+          <p style="font-size: 13.5px; color: var(--muted, #6b7280); margin: 0 0 24px 0; line-height: 1.5;">Would you like to generate a bill/invoice for <strong>${patientName}</strong> now?</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn btn-primary" id="btnPromptGenerate" style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; cursor: pointer;">
+              <i class="fa-solid fa-receipt" style="margin-right: 8px;"></i> Yes, Generate Bill
+            </button>
+            <button class="btn btn-ghost" id="btnPromptNoBill" style="height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border, #eee); font-size: 14px; font-weight: 600; color: var(--text, #111827); background: none; cursor: pointer;">
+              Save Without Bill
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      document.getElementById("btnPromptGenerate").onclick = () => {
+        window.location.href = `billing.html?id=${patientId}`;
+      };
+
+      document.getElementById("btnPromptNoBill").onclick = () => {
+        window.location.href = 'patients.html';
+      };
     }
 
     function printCaseSheet() {
