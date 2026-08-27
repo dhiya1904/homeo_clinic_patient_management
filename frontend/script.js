@@ -144,23 +144,58 @@ function renderAptStatusChart() {
 function renderAppointments(filter = "all") {
   const tbody = document.getElementById("appointmentsBody");
   if (!tbody) return;
-  let rows;
-  if (filter === "all") rows = APPOINTMENTS;
-  else if (filter === "upcoming") rows = APPOINTMENTS.filter(a => a.status !== "cancelled" && a.status !== "completed");
-  else rows = APPOINTMENTS.filter(a => a.status === filter);
-  tbody.innerHTML = rows.map((a, i) => `
-    <tr>
+
+  // On the dashboard (index.html), restrict to today's appointments only
+  const isDashboard = !!document.getElementById("card-apt-status");
+  const todayStr = getLocalISODate(new Date());
+
+  let rows = APPOINTMENTS;
+  if (isDashboard) {
+    rows = APPOINTMENTS.filter(a => {
+      if (!a.date) return false;
+      const aptDate = typeof a.date === 'string' ? a.date.slice(0, 10) : getLocalISODate(new Date(a.date));
+      return aptDate === todayStr;
+    });
+  }
+
+  // Apply status filter (case-insensitive)
+  if (filter === "upcoming") {
+    rows = rows.filter(a => {
+      const s = (a.status || '').toLowerCase();
+      return s !== "cancelled" && s !== "completed" && s !== "attended";
+    });
+  } else if (filter !== "all") {
+    rows = rows.filter(a => (a.status || '').toLowerCase() === filter.toLowerCase());
+  }
+
+  // Status → color for row highlighting
+  const statusColor = (status) => {
+    const s = (status || '').toLowerCase();
+    if (s === 'completed' || s === 'attended') return 'rgba(16,185,129,0.15)';
+    if (s === 'cancelled' || s === 'no-show') return 'rgba(239,68,68,0.15)';
+    if (s === 'confirmed' || s === 'upcoming' || s === 'scheduled') return 'rgba(59,130,246,0.15)';
+    return 'transparent';
+  };
+
+  tbody.innerHTML = rows.map((a, i) => {
+    const statusLower = (a.status || 'pending').toLowerCase();
+    const badgeClass = statusLower === 'attended' || statusLower === 'completed' ? 'completed'
+      : statusLower === 'cancelled' ? 'cancelled'
+      : statusLower === 'confirmed' ? 'confirmed'
+      : 'pending';
+    return `
+    <tr style="background:${statusColor(a.status)}">
       <td>${String(i + 1).padStart(2,"0")}</td>
       <td><strong>${a.name}</strong></td>
       <td><i class="fa-regular fa-clock" style="color:var(--muted);margin-right:5px"></i>${a.time}</td>
       <td>${a.doctor}</td>
       <td>${a.type}</td>
       <td>
-        <select class="status-select badge badge-${a.status}" data-id="${a.id}">
-          <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-          <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>Pending</option>
-          <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>Completed</option>
-          <option value="cancelled" ${a.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+        <select class="status-select badge badge-${badgeClass}" data-id="${a.id}">
+          <option value="confirmed" ${statusLower === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+          <option value="pending" ${statusLower === 'pending' ? 'selected' : ''}>Pending</option>
+          <option value="completed" ${statusLower === 'completed' || statusLower === 'attended' ? 'selected' : ''}>Completed</option>
+          <option value="cancelled" ${statusLower === 'cancelled' ? 'selected' : ''}>Cancelled</option>
         </select>
       </td>
       <td>
@@ -168,8 +203,14 @@ function renderAppointments(filter = "all") {
         <button class="tbl-action btn-edit-apt" title="Edit" aria-label="Edit ${a.name}" data-id="${a.id}"><i class="fa-solid fa-pen-to-square"></i></button>
         <button class="tbl-action btn-delete-apt" title="Delete" aria-label="Delete ${a.name}" data-id="${a.id}" style="color:#ef4444"><i class="fa-solid fa-trash"></i></button>
       </td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
+
+  // Update apt count badge
+  const badge = document.getElementById("aptCount");
+  if (badge) badge.textContent = rows.length;
 }
+
 
 // ── PAST APPOINTMENTS TABLE ───────────────────────────────────
 function renderPastAppointments() {
@@ -252,8 +293,8 @@ function renderAllPatients(patientsData) {
       <td>
         <div class="tbl-actions-group">
           <button class="tbl-action" title="View Profile" onclick="openPatientProfile('${id}')"><i class="fa-solid fa-eye"></i></button>
-          <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${id}'" style="color: var(--accent);"><i class="fa-solid fa-file-medical"></i></button>
-          <button class="tbl-action" title="Add Next Visit / Follow-Up" onclick="window.location.href='register.html?id=${id}&newVisit=true'" style="color: #10b981;"><i class="fa-solid fa-notes-medical"></i></button>
+          <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${id}'"><i class="fa-solid fa-file-medical" style="color:var(--accent)" title="View Case Sheet"></i></button>
+          <button class="tbl-action" title="Add Next Visit / Follow-Up" onclick="window.location.href='register.html?id=${id}&newVisit=true'" style="color: #10b981;"><i class="fa-solid fa-file-circle-plus"></i></button>
         </div>
       </td>
     </tr>`;
@@ -385,10 +426,11 @@ async function openPatientProfile(id) {
               <div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--surface);">
                 <div>
                   <div style="font-weight: 600; font-size: 14px; color: var(--text);">${cs.casesheet_type} Casesheet</div>
+                  <div style="font-size: 13px; color: var(--text); margin: 4px 0;">Diagnosis: ${cs.disease || 'N/A'}</div>
                   <div style="font-size: 12px; color: var(--muted);"><i class="fa-solid fa-calendar-days"></i> ${new Date(cs.casesheet_date).toLocaleDateString()}</div>
                 </div>
                 <button class="btn btn-ghost" onclick="window.location.href='register.html?id=${p.id}&casesheet_id=${cs.id}'" style="border: 1px solid var(--border); padding: 5px 10px; font-size: 12px;">
-                  <i class="fa-solid fa-folder-open"></i> Open
+                  <i class="fa-solid fa-folder-open"></i> Open Case Sheet
                 </button>
               </div>
             `).join('');
@@ -499,8 +541,18 @@ async function renderMedicines() {
     const patientName = p.patient_name || 'Unknown Patient';
     const diag = p.diagnosis || p.symptoms_observed || 'General Homoeopathic Consultation';
     const rx = p.advice || 'Remedy prescribed per case sheet totality';
-    const pDate = p.prescription_date ? getLocalISODate(p.prescription_date) : '—';
-    const rDate = p.next_visit_date || '—';
+    const formatDateTime = (isoString) => {
+      if (!isoString) return '—';
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return isoString;
+      const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      if (isoString.length <= 10 || isoString.includes('T00:00:00') || timeStr === '12:00 AM' || timeStr === '00:00') return dateStr;
+      return `${dateStr} ${timeStr}`;
+    };
+
+    const pDate = formatDateTime(p.prescription_date);
+    const rDate = formatDateTime(p.next_visit_date);
     const patientId = p.patient_id || '';
 
     return `<tr>
@@ -511,7 +563,7 @@ async function renderMedicines() {
       <td><span class="badge" style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2)">${rDate}</span></td>
       <td>
         <div class="tbl-actions-group">
-          <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${patientId}'" style="color:var(--accent);"><i class="fa-solid fa-file-medical"></i></button>
+          <button class="tbl-action" title="View Case Sheet" onclick="window.location.href='register.html?id=${patientId}'"><i class="fa-solid fa-file-medical" style="color:var(--accent)" title="View Case Sheet"></i></button>
           <button class="tbl-action" title="Print Prescription" onclick="window.location.href='register.html?id=${patientId}'"><i class="fa-solid fa-print"></i></button>
         </div>
       </td>
@@ -528,10 +580,10 @@ function renderChart(period) {
   if (!area || !labels) return;
 
   const data = CHART_DATA[period];
-  const max = Math.max(...data.values);
+  const max = Math.max(...data.values, 1);
 
   area.innerHTML = data.values.map((v, i) => {
-    const pct = Math.round((v / max) * 100);
+    const pct = max > 0 ? Math.round((v / max) * 100) : 0;
     return `<div class="chart-bar-wrap">
       <div class="chart-bar" style="height:0%" data-pct="${pct}" title="₹${v.toLocaleString("en-IN")}"></div>
     </div>`;
@@ -545,6 +597,19 @@ function renderChart(period) {
       setTimeout(() => { bar.style.height = bar.dataset.pct + "%"; }, 50);
     });
   });
+
+  // Update revenue total value & label on dashboard
+  const periodTotal = data.values.reduce((sum, v) => sum + v, 0);
+  const revValueEl = document.getElementById("dashboardRevenueValue");
+  const revLabelEl = document.getElementById("dashboardRevenueLabel");
+
+  if (revValueEl) {
+    revValueEl.dataset.target = periodTotal;
+    revValueEl.textContent = "₹" + periodTotal.toLocaleString("en-IN");
+  }
+  if (revLabelEl) {
+    revLabelEl.textContent = period === "weekly" ? "Weekly Revenue" : "Monthly Revenue";
+  }
 }
 
 // ── SIDEBAR TOGGLE ────────────────────────────────────────────
@@ -1878,6 +1943,11 @@ function applyDoctorName(name, role) {
   if (roleElements) {
     roleElements.forEach(el => el.textContent = role || "Administrator");
   }
+
+  const welcomeStrong = document.querySelector(".breadcrumb strong");
+  if (welcomeStrong) {
+    welcomeStrong.textContent = name;
+  }
   
   // Update Case Sheet select value in register.html if it is present
   const docInput = document.querySelector('[name="fs_doctor"]');
@@ -2639,6 +2709,9 @@ function initLoginPage() {
       if (response.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("clinicName", data.clinic_name);
+        const nameToSave = (data.user && (data.user.full_name || data.user.username)) || "Dr. Priya S.";
+        localStorage.setItem("doctor-name", nameToSave);
+        localStorage.setItem("user_name", nameToSave);
         showToast("Login successful! Welcome back.");
         setTimeout(() => {
           window.location.href = "index.html";
@@ -2997,7 +3070,9 @@ async function initCommunicationsPage() {
   // ── 5. Helpers
   function getSelectedChannel() {
     const ch = document.querySelector('input[name="channel"]:checked');
-    return ch ? ch.value : 'whatsapp';
+    const val = ch ? ch.value : 'whatsapp';
+    const channelMap = { whatsapp: 'WhatsApp', email: 'Email', sms: 'SMS' };
+    return channelMap[val.toLowerCase()] || 'WhatsApp';
   }
 
   function getRecipientLabel() {
@@ -3098,6 +3173,11 @@ async function initCommunicationsPage() {
 console.log("Jireh Homeopathy Script Loading...");
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const headerUserName = localStorage.getItem('user_name') || 'Dr. Priya S.';
+  document.querySelectorAll('.admin-name').forEach(span => span.textContent = headerUserName);
+  const welcomeStr = document.querySelector('.breadcrumb strong');
+  if (welcomeStr) welcomeStr.textContent = headerUserName;
+
   console.log("DOM fully loaded and parsed. Initializing components...");
   
   // 1. Initialize UI
@@ -3177,6 +3257,67 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   if (document.getElementById("appointmentsBody")) {
     renderAppointments("all");
+  }
+
+  // 4.5. Load billing data and compute revenue for Weekly and Monthly charts
+  try {
+    const bills = await getBackendBilling();
+    const today = new Date();
+    
+    // Weekly calculation (Mon-Sun of current week)
+    const currentDay = today.getDay(); // 0 is Sun, 1 is Mon...
+    const distToMon = (currentDay + 6) % 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - distToMon);
+    monday.setHours(0, 0, 0, 0);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    const weeklyValues = [0, 0, 0, 0, 0, 0, 0];
+    const monthFullNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthAbbrs = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const currentMonthIdx = today.getMonth();
+    
+    // Build last 7 months labels & values for monthly chart
+    const monthlyLabels = [];
+    const monthlyValues = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      monthlyLabels.push(monthAbbrs[d.getMonth()]);
+      monthlyValues.push(0);
+    }
+
+    bills.forEach(b => {
+      if (b.date) {
+        let bd = new Date(b.date);
+        if (isNaN(bd.getTime())) bd = new Date(b.date.replace(" ", "T"));
+        if (!isNaN(bd.getTime())) {
+          const amt = parseFloat(b.total_amount) || parseFloat(b.subtotal_amount) || 0;
+          
+          // Check if in current week
+          if (bd >= monday && bd <= sunday) {
+            const dayIdx = (bd.getDay() + 6) % 7; // 0=Mon, 6=Sun
+            weeklyValues[dayIdx] += amt;
+          }
+
+          // Check monthly match
+          for (let i = 6; i >= 0; i--) {
+            const mDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            if (bd.getFullYear() === mDate.getFullYear() && bd.getMonth() === mDate.getMonth()) {
+              monthlyValues[6 - i] += amt;
+            }
+          }
+        }
+      }
+    });
+
+    CHART_DATA.weekly.values = weeklyValues.map(v => Math.round(v));
+    CHART_DATA.monthly.labels = monthlyLabels;
+    CHART_DATA.monthly.values = monthlyValues.map(v => Math.round(v));
+  } catch (e) {
+    console.error("Failed to compute live revenue chart data:", e);
   }
 
   // 5. Final Renderings

@@ -529,7 +529,7 @@ body {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 /* Rows */
@@ -557,10 +557,10 @@ body {
 
 /* Badges */
 .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
-.badge-confirmed { background: rgba(5, 150, 105, 0.1); color: var(--green); }
-.badge-pending   { background: rgba(217, 119, 6, 0.1); color: var(--amber); }
-.badge-cancelled { background: rgba(220, 38, 38, 0.1); color: var(--rose); }
-.badge-completed { background: var(--surface-2); color: var(--text-2); }
+.badge-confirmed, .badge-upcoming, .badge-scheduled { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.badge-completed, .badge-attended { background: rgba(16,185,129,0.15); color: #10b981; }
+.badge-cancelled, .badge-no-show { background: rgba(239,68,68,0.15); color: #ef4444; }
+.badge-pending   { background: rgba(217, 119, 6, 0.15); color: var(--amber); }
 
 .status-select {
   border: 1px solid transparent; outline: none; cursor: pointer;
@@ -1180,4 +1180,21 @@ body {
   .print-textarea-box { border: 1px solid #ccc; min-height: 120px; padding: 16px; margin-bottom: 24px; white-space: pre-wrap; font-size: 14px; }
   .print-development-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
   .print-development-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; }
+}
+
+
+/* Appointments List View Layout Fix */
+#appointmentsList {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+#appointmentsList table {
+  width: 100%;
+  table-layout: auto;
+  word-wrap: break-word;
+}
+#appointmentsList table th, #appointmentsList table td {
+  padding: 12px;
 }

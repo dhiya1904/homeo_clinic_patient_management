@@ -4,9 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>
-    if (!localStorage.getItem("token")) {
-      window.location.href = "login.html";
-    }
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      if (!localStorage.getItem("token") && window.location.pathname.indexOf("login.html") === -1) {
+        window.location.href = "login.html";
+      }
+    })();
   </script>
   <meta name="description" content="Homeopathy Case Sheet - Jireh Homeopathy" />
   <title>Jireh Homeopathy | Patient Registration</title>
@@ -589,9 +597,12 @@
       <div style="flex: 1; display: flex; align-items: center; color: var(--muted); font-size: 14px;">
         Auto-saving enabled.
       </div>
-      <button type="button" class="btn btn-ghost" onclick="resetForm()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
-      <button type="button" class="btn btn-ghost" onclick="printCaseSheet()" style="color: var(--accent); border: 1px solid var(--accent);"><i class="fa-solid fa-print"></i> Print / PDF</button>
-      <button type="button" class="btn btn-primary" onclick="submitCaseSheet()"><i class="fa-solid fa-floppy-disk"></i> Save Case Sheet</button>
+      <button type="button" class="btn btn-secondary" onclick="saveAndPrintCaseSheet()"><i class="fa-solid fa-print"></i> Save & Print Case Sheet</button>
+      <button type="button" class="btn btn-primary" onclick="saveAndGenerateBill()"><i class="fa-solid fa-receipt"></i> Save & Generate Bill</button>
+      <script>
+        function saveAndPrintCaseSheet() { submitCaseSheet('print'); }
+        function saveAndGenerateBill() { submitCaseSheet('bill'); }
+      </script>
     </div>
 
   </div>
@@ -890,7 +901,7 @@
       }
     }
 
-    async function submitCaseSheet() {
+    async function submitCaseSheet(action = 'bill') {
       // Validate required fields
       const name = document.getElementById('fullName')?.value.trim();
       const phone = document.getElementById('phone')?.value.trim();
@@ -920,11 +931,10 @@
         complaints: complaints
       };
 
-      const submitBtn = document.querySelector('.sticky-footer .btn-primary');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-      }
+      const submitBtns = document.querySelectorAll('.sticky-footer button');
+      submitBtns.forEach(btn => btn.disabled = true);
+      const originalText = document.querySelector('.sticky-footer .btn-primary').innerHTML;
+      document.querySelector('.sticky-footer .btn-primary').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
       // Determine API URL (same logic as script.js?v=1784972763365)
       const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -954,18 +964,35 @@
               const aptDate = document.getElementById('regDate')?.value || new Date().toLocaleDateString('sv-SE');
               const doctorName = document.querySelector('[name="fs_doctor"]')?.value || 'Dr. Priya S.';
               
-              await fetch(`${API_URL}/appointments`, {
-                method: 'POST',
-                headers: authHeaders,
-                body: JSON.stringify({
-                  patient_id: patientId,
-                  doctor: doctorName,
-                  date: aptDate,
-                  time: '10:00',
-                  type: 'Consultation',
-                  status: 'Completed'
-                })
-              });
+              let existingApt = null;
+              try {
+                const aptsRes = await fetch(`${API_URL}/appointments`, { headers: authHeaders });
+                if (aptsRes.ok) {
+                  const apts = await aptsRes.json();
+                  existingApt = apts.find(a => (a.patient_id === patientId || a.patient_id === regNo) && String(a.date).startsWith(aptDate));
+                }
+              } catch (e) {}
+              
+              if (existingApt) {
+                await fetch(`${API_URL}/appointments/${existingApt.id}`, {
+                  method: 'PUT',
+                  headers: authHeaders,
+                  body: JSON.stringify({ status: 'Completed' })
+                });
+              } else {
+                await fetch(`${API_URL}/appointments`, {
+                  method: 'POST',
+                  headers: authHeaders,
+                  body: JSON.stringify({
+                    patient_id: patientId,
+                    doctor: doctorName,
+                    date: aptDate,
+                    time: '10:00',
+                    type: 'Consultation',
+                    status: 'Completed'
+                  })
+                });
+              }
             } catch (e) {
               console.warn('Could not auto-create appointment record:', e);
             }
@@ -1033,9 +1060,17 @@
 
           localStorage.removeItem(DRAFT_KEY);
           showToast(`Case Sheet for "${name}" saved successfully!`);
-          setTimeout(() => {
-            showBillingPromptModal(patientId, name);
-          }, 1000);
+          
+          if (action === 'print') {
+            printCaseSheet();
+            setTimeout(() => {
+              window.location.href = 'patients.html';
+            }, 1000);
+          } else if (action === 'bill') {
+            setTimeout(() => {
+              window.location.href = `billing.html?id=${patientId}`;
+            }, 500);
+          }
         } else {
           let errMsg = 'Failed to register patient.';
           try {
